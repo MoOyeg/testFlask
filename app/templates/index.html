@@ -9,7 +9,6 @@
           <div><p>{{ configuration }}: {{ value }} </b></p></div>
       {% endfor %}
 
-    <p> {{ message }} </p>
     <h2> Add Value to Database </h2>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
@@ -25,19 +24,25 @@
     </form>
  
     <h2> Database Value</h2>
-    <table style= "border: 1px solid black; padding: 10px;">
+    <table style= "border: 1px solid black; table-layout: auto; width: 750px;">
    <tr>
     <th>Timestamp</th>
     <th>Key</th>
     <th>Value</th>
-   </tr>
-    <tr>
-    <td>January</td>
-    <td>$100</td>
-    </tr>
-    </table>
-      {% for key,value in db_value.items() %}         
-         <div><p>Timestamp:{{ db_time[key] }} {{ key }}: {{ value }} </b></p></div>
+    <th>Remove<th>
+   </tr> 
+    
+      {% for key,value in db_value.items() %}  
+      <tr>       
+         <!--<div><p>Timestamp:{{ db_time[key] }} {{ key }}: {{ value }} </b></p></div> -->
+        <td>{{ db_time[key] }}</td>
+        <td>{{ key }}</td>
+        <td>{{ value }}</td>
+        <td><a href={{ db_remove[key] }}>Remove</a></td>
+      </tr>
       {% endfor %}
+
+    </table>
+
 
 {% endblock %}
