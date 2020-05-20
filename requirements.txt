@@ -12,10 +12,12 @@ Flask-Migrate==2.5.3
 Flask-Moment==0.9.0
 Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.3
+gunicorn==20.0.4
 itsdangerous==1.1.0
 Jinja2==2.11.2
 Mako==1.1.2
 MarkupSafe==1.1.1
+PyMySQL==0.9.3
 python-dateutil==2.8.1
 python-dotenv==0.13.0
 python-editor==1.0.4

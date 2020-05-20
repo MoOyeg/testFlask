@@ -10,12 +10,14 @@ from config import Config
 
 
 
+
 def refresh_db(url):
     form = PostForm()
     stored_values={}
     db_value = {}
     db_time = {}
     db_remove = {}
+    count = 0
 
     url=url.replace("/index","")
     stored_values = KeyStore.query.all()
@@ -23,7 +25,8 @@ def refresh_db(url):
         db_time.update({val.key:val.timestamp})
         db_value.update({val.key:val.value})
         db_remove.update({val.key:"{}{}?key={}".format(url,url_for('main.db_remove'),val.key)})
-    return [db_value, db_time, db_remove]
+        count += 1
+    return [db_value, db_time, db_remove, count]
 
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -61,16 +64,7 @@ def index():
             temp_db = refresh_db(fullurl)
             return render_template('index.html', form=form, configs=configs,
             db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2])
-
-        #if value_remove is not None:
-            #Check if key is in DB
-        #    tempkey = KeyStore.query.filter_by(key=value_remove).first()
-        #    if tempkey is not None:
-        #        db.session.remove(tempkey)
-        #key = KeyStore.query.filter_by(key=form.key.data).first()
-        #value = KeyStore.query.filter_by(value=form.value.data).first()
-
-        #return redirect('/index')
+ 
         temp_db = refresh_db(fullurl)
         return render_template('index.html', form=form, configs=configs,
             db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2])
@@ -91,4 +85,7 @@ def db_remove():
             db.session.commit()
     return redirect('/index')
     
-    
+@bp.route('/metrics', methods=['GET'])
+def db_metrics():
+    temp_db = refresh_db
+    count=temp_db[3]
