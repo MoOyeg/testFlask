@@ -1,31 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@MoOyeg 
-MoOyeg
-/
-Flaskex
-forked from anfederico/Flaskex
-0
-0204
- Code
- Pull requests 0 Actions
- Projects 0
- Wiki
- Security 0
- Insights
- Settings
-Flaskex/.gitignore
-@anfederico anfederico Default set to local deployment
-786793d on Jun 17, 2019
-@anfederico@RDCH106
-164 lines (135 sloc)  1.85 KB
- 
 accounts.db
 
 # Byte-compiled / optimized / DLL files
@@ -190,15 +162,3 @@ htmlcov/
 .coverage
 .coverage.*
 *,cover
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
