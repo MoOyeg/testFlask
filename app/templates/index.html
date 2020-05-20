@@ -1,0 +1,43 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block content %}
+ 
+    <h1>Jennison Openshift Demo</h1>
+
+    <h2> Active Configuration </h2>
+      {% for configuration,value in configs.items() %}         
+          <div><p>{{ configuration }}: {{ value }} </b></p></div>
+      {% endfor %}
+
+    <p> {{ message }} </p>
+    <h2> Add Value to Database </h2>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.key.label }}<br>
+            {{ form.key(size=32) }}
+        </p>
+        <p>
+            {{ form.value.label }}<br>
+            {{ form.value(size=32) }}
+        </p>
+        <p>{{ form.add() }}</p>
+    </form>
+ 
+    <h2> Database Value</h2>
+    <table style= "border: 1px solid black; padding: 10px;">
+   <tr>
+    <th>Timestamp</th>
+    <th>Key</th>
+    <th>Value</th>
+   </tr>
+    <tr>
+    <td>January</td>
+    <td>$100</td>
+    </tr>
+    </table>
+      {% for key,value in db_value.items() %}         
+         <div><p>Timestamp:{{ db_time[key] }} {{ key }}: {{ value }} </b></p></div>
+      {% endfor %}
+
+{% endblock %}
