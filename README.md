@@ -13,7 +13,9 @@ oc create secret generic <secret_name> --type=kubernetes.io/ssh-auth --from-file
 2 Link Secret with your Service Account,default on most Openshift projects i builder so will link with builder
 oc secrets link builder <secret_name>
 
-3 Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container.Please see 
-will create:
-     A deployment/deploymentconfig to manage the scaling of the app
-     B If an appropriate source is provided it will automatically build the application. Notice in the example below I will not specify a builder image
+3 Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container.Please see https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html and https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html
+
+oc new-app git@github.com:MoOyeg/testFlask.git --source-secret=github-secret -l app=testapp-git --strategy=source --build-env=APP_CONFIG=gunicorn.conf.py --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app
+
+
+oc create secret generic testappflask --from-literal=SQLALCHEMY_DATABASE_URI=mysql://user:pass@mysql/testdb app=testappflask
