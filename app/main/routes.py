@@ -7,9 +7,7 @@ from app.main import bp
 from app.main.forms import PostForm
 from app.models import KeyStore
 from config import Config
-
-
-
+from config import myclassvariables
 
 def refresh_db(url):
     form = PostForm()
@@ -37,7 +35,7 @@ def index():
     db_value = {}
     db_time = {}
     db_remove = {}
-    configs = Config.myclassvariables()
+    configs = myclassvariables()
 
     
     if not Config.DB_INIT:
