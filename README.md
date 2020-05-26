@@ -8,14 +8,16 @@
 **Steps 1 & 2 are only necessary if you are using a private fit repo**
 
 - Create Secret in Openshift for Private/Cluster, example is for github ssh key<br/>
-```oc create secret generic $SECRET_NAME --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=$SSHKEY_PATH```
+```oc create secret generic $SECRET_NAME --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=$SSHKEY_PATH -n $NAMESPACE```
 
 - Link Secret with your Service Account,default on most Openshift projects builder is the default Service account so will link with builder
-```oc secrets link builder $SECRET_NAME```
+```oc secrets link builder $SECRET_NAME -n $NAMESPACE```
 
 - Create a new mysql instance(Application will use sqlite if no mysql detail is provided)<br/>
-```oc new-app $MYSQL_NAME MYSQL_USER=$MYSQL_USER MYSQL_PASSWORD=$MYSQL_PASSWORD MYSQL_DATABASE=$MYSQL_DB -l db=mysql -l app=flasktest```
+```oc new-app $MYSQL_NAME MYSQL_USER=$MYSQL_USER MYSQL_PASSWORD=$MYSQL_PASSWORD MYSQL_DATABASE=$MYSQL_DB -l db=mysql -l app=flasktest -n $NAMESPACE```
 
-- Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite skip all the database environment variables**</br>```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --source-secret=github-secret -l app=testapp --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=DATABASE_USERNAME=$MYSQL_USER --env=DATABASE_PASSWORD --env=DATABASE_HOST=$MYSQL_NAME --env=DATABASE_DB=$MYSQL_DB```
+- Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite skip all the database environment variables**</br>```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --source-secret=github-secret -l app=testapp --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=DATABASE_USERNAME=$MYSQL_USER --env=DATABASE_PASSWORD=$MYSQL_PASSWORD --env=DATABASE_HOST=$MYSQL_NAME --env=DATABASE_DB=$MYSQL_DB -n $NAMESPACE```
 
+
+- You should be able to log into the openshift console now to get a better look at the application, the whole process above can be done in the console, to get more info about the developer console please visit [Openshift Developer Console](https://docs.openshift.com/container-platform/4.4/applications/application_life_cycle_management/odc-creating-applications-using-developer-perspective.html)
 

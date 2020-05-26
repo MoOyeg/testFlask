@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, g, \
-    jsonify, current_app
+    jsonify, current_app, make_response
 from flask_login import current_user, login_required
 from app import db
 from app.main import bp
@@ -9,9 +9,17 @@ from app.models import KeyStore
 from config import Config
 from config import myclassvariables
 
+health_status_ok = True
 counter_db_inserted = 0
 counter_db_removed = 0
 counter_db_available = 0
+
+def check_health():
+    if health_status_ok:
+        return True
+    else:
+        return False
+
 
 def refresh_db(url):
     form = PostForm()
@@ -99,3 +107,9 @@ def metrics():
 
 @bp.route('/health', methods=['GET'])
 def health():
+    #Provide Application Health Status to the Outside World
+    if check_health:
+        return make_response(jsonify({'Status': 'OK'}), 200)
+    else:
+        return make_response(jsonify({'Status': 'Unavailable'}), 503)
+
