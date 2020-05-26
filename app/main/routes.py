@@ -10,16 +10,48 @@ from config import Config
 from config import myclassvariables
 
 health_status_ok = True
+ready_status_ok= True
 counter_db_inserted = 0
 counter_db_removed = 0
 counter_db_available = 0
 
 def check_health():
+    #Nothing Fancy will Store Application Health in Variable for now
     if health_status_ok:
+        print("Checking if Application is Healthy: Application is Healthy")
         return True
     else:
+        print("Checking if Application is Healthy: Application is Unhealthy")
         return False
 
+def check_ready():
+    #To Check Readiness we will attempt to add and remove from the db
+    insertime = datetime.utcnow()
+    if ready_status_ok:
+        print("Checking if Application is Ready: Application is Ready")
+        return True
+    else:
+        print("Checking if Application is Ready: Application is not Ready")
+        return False
+    
+    try:
+        temp = KeyStore(timestamp=insertime, key="test123", value="test123")
+        db.session.add(temp)
+        db.session.commit()
+    except:
+        print("Application Not Ready we could not insert into Database")
+        return False
+    
+    try:
+        tempkey = KeyStore.query.filter_by(key="test123").first()
+        db.session.delete(tempkey)
+        db.session.commit()
+    except:
+        print("Application Not Ready we could not remove from Database")
+        return False
+
+    return True
+    
 
 def refresh_db(url):
     form = PostForm()
@@ -113,3 +145,10 @@ def health():
     else:
         return make_response(jsonify({'Status': 'Unavailable'}), 503)
 
+@bp.route('/ready', methods=['GET'])
+def ready():
+    #Provide Application Ready Status to the Outside World
+    if check_ready:
+        return make_response(jsonify({'Status': 'Ready'}), 200)
+    else:
+        return make_response(jsonify({'Status': 'Unavailable'}), 503)
