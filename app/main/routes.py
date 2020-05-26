@@ -9,6 +9,10 @@ from app.models import KeyStore
 from config import Config
 from config import myclassvariables
 
+counter_db_inserted = 0
+counter_db_removed = 0
+counter_db_available = 0
+
 def refresh_db(url):
     form = PostForm()
     stored_values={}
@@ -57,6 +61,7 @@ def index():
             temp = KeyStore(timestamp=insertime, key=request.form["key"], value=request.form["value"])
             db.session.add(temp)
             db.session.commit()
+            counter_db_inserted += 1
         else:
             flash('Value already exists for key {}'.format(key))
             temp_db = refresh_db(fullurl)
@@ -81,9 +86,16 @@ def db_remove():
         if tempkey is not None:
             db.session.delete(tempkey)
             db.session.commit()
+            counter_db_removed += 1
     return redirect('/index')
     
 @bp.route('/metrics', methods=['GET'])
-def db_metrics():
+def metrics():
+    #Provide Some Metrics to External Platforms
     temp_db = refresh_db
-    count=temp_db[3]
+    counter_db_available = temp_db[3]
+    return "Available Keys: {}, Total Insert Statements: {}, Total Remove Statements: {}".format(
+        counter_db_available,counter_db_inserted,counter_db_removed)
+
+@bp.route('/health', methods=['GET'])
+def health():
