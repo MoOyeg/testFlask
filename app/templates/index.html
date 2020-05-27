@@ -40,8 +40,28 @@
         <td>{{ value }}</td>
         <td><a href={{ db_remove[key] }}>Remove</a></td>
       </tr>
-      {% endfor %}
+      {% endfor %}  
+    </table>
 
+    <h2> Application Status </h2>
+    <p> Application Ready?: {{ ready }}</p>
+    <table style= "border: 1px solid black; table-layout: auto; width: 750px;">
+    <th>Change Application Readiness</th>
+    <tr>
+    <td style="padding:0 15px 0 15px;"><a href={{ ready_url}}?status=down>DOWN </a></td>
+    <td style="padding:0 15px 0 15px;"><a href={{ ready_url}}?status=up>UP</a></td>
+    </tr>    
+    </table>
+ 
+    <p></p>
+    <p> Application Healthy?: {{ health }}</p>
+    <table>
+    <table style= "border: 1px solid black; table-layout: auto; width: 750px;">
+    <th>Change Application Health</th>
+    <tr>
+    <td style="padding:0 15px 0 15px;"><a href={{ health_url}}?status=down>DOWN </a></td>
+    <td style="padding:0 15px 0 15px;"><a href={{ health_url}}?status=up>UP</a></td>
+    </tr>
     </table>
 
 

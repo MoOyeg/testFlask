@@ -14,7 +14,7 @@
 ```oc secrets link builder $SECRET_NAME -n $NAMESPACE```
 
 - **Create a New Secret to host our database credentials**<br/>
-```oc create secret generic my-secret --from-literal=MYSQL_USER=$MYSQL_USER --from-literal=MYSQL_PASSWORD=$MYSQL_PASSWORD --from-literal=DATABASE_USER=$MYSQL_USER --from-literal=DATABASE_PASSWORD=$MYSQL_PASSWORD -n $NAMESPACE```
+```oc create secret generic my-secret --from-literal=MYSQL_USER=$MYSQL_USER --from-literal=MYSQL_PASSWORD=$MYSQL_PASSWORD -n $NAMESPACE```
 
 - **Create a new mysql instance(Application will use sqlite if no mysql detail is provided)**<br/>
 ```oc new-app $MYSQL_NAME --env=MYSQL_DATABASE=$MYSQL_DB -l db=mysql -l app=flasktest -n $NAMESPACE```
@@ -22,7 +22,7 @@
 -**The new app above will fail because we have not provided the MYSQL user and password,we can provide the database secret to the mysql deployment**<br/>
 ```oc set env dc/$MYSQL_NAME --from=secret/my-secret -n $NAMESPACE```
 
-- **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite skip all the database environment variables**</br>```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testapp --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=DATABASE_HOST=$MYSQL_NAME --env=DATABASE_DB=$MYSQL_DB -n $NAMESPACE```
+- **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite skip all the database environment variables**</br>```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testapp --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```
 
 - **Expose the service to the outside world with an openshift route**<br/>
 ```oc expose svc/$APP_NAME```

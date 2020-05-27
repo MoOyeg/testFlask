@@ -7,6 +7,7 @@ from app.main import bp
 from app.main.forms import PostForm
 from app.models import KeyStore
 from config import Config
+import sys
 from config import myclassvariables
 
 health_status_ok = True
@@ -15,23 +16,24 @@ counter_db_inserted = 0
 counter_db_removed = 0
 counter_db_available = 0
 
+
 def check_health():
     #Nothing Fancy will Store Application Health in Variable for now
     if health_status_ok:
-        print("Checking if Application is Healthy: Application is Healthy")
+        print("Checking if Application is Healthy: Application is Healthy", file=sys.stderr)
         return True
     else:
-        print("Checking if Application is Healthy: Application is Unhealthy")
+        print("Checking if Application is Healthy: Application is Unhealthy", file=sys.stderr)
         return False
 
 def check_ready():
     #To Check Readiness we will attempt to add and remove from the db
     insertime = datetime.utcnow()
     if ready_status_ok:
-        print("Checking if Application is Ready: Application is Ready")
+        print("Checking if Application is Ready: Application is Ready", file=sys.stderr)
         return True
     else:
-        print("Checking if Application is Ready: Application is not Ready")
+        print("Checking if Application is Ready: Application is not Ready", file=sys.stderr)
         return False
     
     try:
@@ -39,7 +41,7 @@ def check_ready():
         db.session.add(temp)
         db.session.commit()
     except:
-        print("Application Not Ready we could not insert into Database")
+        print("Application Not Ready we could not insert into Database", file=sys.stderr)
         return False
     
     try:
@@ -47,7 +49,7 @@ def check_ready():
         db.session.delete(tempkey)
         db.session.commit()
     except:
-        print("Application Not Ready we could not remove from Database")
+        print("Application Not Ready we could not remove from Database", file=sys.stderr)
         return False
 
     return True
@@ -80,8 +82,18 @@ def index():
     db_time = {}
     db_remove = {}
     configs = myclassvariables()
-
+    fullurl = request.base_url
+    healthdown_url=fullurl.replace("/index","/health_down")
+    readydown_url=fullurl.replace("/index","/ready_down")
     
+    #Need to confirm health_down applied since / and /index might be diff
+    if "health_down" not in healthdown_url:
+        healthdown_url = "{}{}".format(healthdown_url,"health_down")
+    if "ready_down" not in readydown_url:
+        readydown_url = "{}{}".format(readydown_url,"ready_down")
+
+    global counter_db_inserted
+
     if not Config.DB_INIT:
         try:
             db.create_all()
@@ -89,11 +101,9 @@ def index():
             pass
         Config.DB_INIT = True;
    
-    
     if form.validate_on_submit():
         key = request.form["key"]
         value = request.form["value"]
-        fullurl = request.base_url
         insertime = datetime.utcnow()
 
         #Check if Key Already Exists
@@ -106,19 +116,23 @@ def index():
             flash('Value already exists for key {}'.format(key))
             temp_db = refresh_db(fullurl)
             return render_template('index.html', form=form, configs=configs,
-            db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2])
+            db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2],
+            health_url=healthdown_url,ready_url=readydown_url,ready=str(check_ready()),health=str(check_health()))
  
         temp_db = refresh_db(fullurl)
         return render_template('index.html', form=form, configs=configs,
-            db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2])
+            db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2],
+            health_url=healthdown_url,ready_url=readydown_url,ready=str(check_ready()),health=str(check_health()))
     
     temp_db = refresh_db(fullurl)
     return render_template('index.html', form=form, configs=configs,
-            db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2])
-
+            db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2],
+            health_url=healthdown_url,ready_url=readydown_url,ready=str(check_ready()),health=str(check_health()))
 
 @bp.route('/remove', methods=['GET', 'POST'])
 def db_remove():
+    global counter_db_removed
+
     value_remove=request.args.get("key")
     if value_remove is not None:
         #Check if key is in DB
@@ -131,16 +145,26 @@ def db_remove():
     
 @bp.route('/metrics', methods=['GET'])
 def metrics():
+    count = 0
     #Provide Some Metrics to External Platforms
-    temp_db = refresh_db
-    counter_db_available = temp_db[3]
-    return "Available Keys: {}, Total Insert Statements: {}, Total Remove Statements: {}".format(
-        counter_db_available,counter_db_inserted,counter_db_removed)
+    if Config.DB_INIT:
+        stored_values = KeyStore.query.all()
+        for val in stored_values:
+            count += 1
+        counter_db_available = count
+        return make_response(jsonify({"Available Keys":"{}".format(counter_db_available)},
+        {"Total Insert Statements":"{}".format(counter_db_inserted)},
+        {"Total Remove Statements":"{}".format(counter_db_removed)}))
+    else:
+         return make_response(jsonify({"Available Keys":""},
+        {"Total Insert Statements":""},
+        {"Total Remove Statements":""}))
+
 
 @bp.route('/health', methods=['GET'])
 def health():
     #Provide Application Health Status to the Outside World
-    if check_health:
+    if check_health():
         return make_response(jsonify({'Status': 'OK'}), 200)
     else:
         return make_response(jsonify({'Status': 'Unavailable'}), 503)
@@ -148,7 +172,30 @@ def health():
 @bp.route('/ready', methods=['GET'])
 def ready():
     #Provide Application Ready Status to the Outside World
-    if check_ready:
+    if check_ready():
         return make_response(jsonify({'Status': 'Ready'}), 200)
     else:
         return make_response(jsonify({'Status': 'Unavailable'}), 503)
+
+
+@bp.route('/health_down', methods=['GET','POST'])
+def health_down():
+    global health_status_ok
+    value=request.args.get("status")
+    if value == "down":
+        health_status_ok = False
+    else:
+        health_status_ok = True
+    return redirect('/index')
+
+
+@bp.route('/ready_down', methods=['GET'])
+def ready_down():
+    global ready_status_ok
+    value=request.args.get("status")
+    if value == "down":
+        ready_status_ok = False
+    else:
+        ready_status_ok = True
+
+    return redirect('/index')

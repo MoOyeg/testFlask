@@ -15,10 +15,10 @@ def create_uri(user,password,host,db):
 class Config(object):
     #Secret key Configuration for Flask not for application
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_USERNAME = os.environ.get('DATABASE_USERNAME') or ""
-    SQLALCHEMY_DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD') or ""
-    SQLALCHEMY_DATABASE_HOST = os.environ.get('DATABASE_HOST') or ""
-    SQLALCHEMY_DATABASE_DB = os.environ.get('DATABASE_DB') or ""
+    SQLALCHEMY_DATABASE_USERNAME = os.environ.get('MYSQL_USER') or ""
+    SQLALCHEMY_DATABASE_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ""
+    SQLALCHEMY_DATABASE_HOST = os.environ.get('MYSQL_NAME') or ""
+    SQLALCHEMY_DATABASE_DB = os.environ.get('MYSQL_DB') or ""
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DB_INIT = False
     
