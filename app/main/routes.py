@@ -146,6 +146,7 @@ def db_remove():
 @bp.route('/metrics', methods=['GET'])
 def metrics():
     count = 0
+    print("Metrics Been Scraped", file=sys.stderr)
     #Provide Some Metrics to External Platforms
     if Config.DB_INIT:
         stored_values = KeyStore.query.all()
