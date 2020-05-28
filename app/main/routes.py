@@ -160,12 +160,12 @@ def metrics():
         # return make_response(jsonify({"Available Keys":"{}".format(counter_db_available)},
         # {"Total Insert Statements":"{}".format(counter_db_inserted)},
         # {"Total Remove Statements":"{}".format(counter_db_removed)}))
-        response=make_response("Available Keys {}\nTotal Insert Statements {}\nTotal Remove Statements {}".format(counter_db_available,
+        response=make_response("Available_Keys {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}".format(counter_db_available,
         counter_db_inserted,counter_db_removed), 200)
         response.content_type = "text/plain"
         return response
     else:
-        response=make_response("Available Keys {}\nTotal Insert Statements {}\nTotal Remove Statements {}".format(counter_db_available,
+        response=make_response("Available_Keys {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}".format(counter_db_available,
         counter_db_inserted,counter_db_removed), 200)
         response.content_type = "text/plain"
         return response
