@@ -1,7 +1,7 @@
 # testFlask
 
 ## Test Flask is a simple flask application to show some parts of the openshift application process
-#### Code Adapted from https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
+
  
 ### Steps to Run
 
@@ -17,12 +17,12 @@
 ```oc create secret generic my-secret --from-literal=MYSQL_USER=$MYSQL_USER --from-literal=MYSQL_PASSWORD=$MYSQL_PASSWORD -n $NAMESPACE```
 
 - **Create a new mysql instance(Application will use sqlite if no mysql detail is provided)**<br/>
-```oc new-app $MYSQL_NAME --env=MYSQL_DATABASE=$MYSQL_DB -l db=mysql -l app=flasktest -n $NAMESPACE```
+```oc new-app $MYSQL_NAME --env=MYSQL_DATABASE=$MYSQL_DB -l db=mysql -l app=testflask -n $NAMESPACE```
 
 -**The new app above will fail because we have not provided the MYSQL user and password,we can provide the database secret to the mysql deployment**<br/>
 ```oc set env dc/$MYSQL_NAME --from=secret/my-secret -n $NAMESPACE```
 
-- **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite skip all the database environment variables**</br>```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testapp --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```
+- **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite skip all the database environment variables**</br>```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```
 
 - **Expose the service to the outside world with an openshift route**<br/>
 ```oc expose svc/$APP_NAME```
@@ -53,7 +53,7 @@
 - **Create a liveliness probe for our application**<br/>
 ```oc set probe dc/$APP_NAME --liveness --get-url=http://:8080/health --timeout-seconds=30 --failure-threshold=3 --period-seconds=10 -n $NAMESPACE```<br/>
 
-- **We can test Openshift Readiness by opening the application page and setting the application ready to down, after a while the application endpoint will be removed from the list of endpoints tht recieve traffic for the service,you can confirm by**<br/>
+- **We can test Openshift Readiness by opening the application page and setting the application ready to down, after a while the application endpoint will be removed from the list of endpoints that recieve traffic for the service,you can confirm by**<br/>
       - ```oc get ep/$APP_NAME -n $NAMESPACE```<br/>
       - Since the readiness removes the pod endpoint from the service we will not be able to access the app page anymore<br/>
       - We will need to log into the pod to enable the readiness back <br/>
@@ -62,5 +62,50 @@
            - ```oc exec $POD_NAME curl http://localhost:8080/ready_down?status=up```<br/>
       
       
+- **Openshift also provides a way for you to use Openshift's platform monitoring to monitor your application metrics and provide alerts on those metrics.Note, this functionality is still in Tech Preview.This only works for applications that expose a /metrics endpoint that can be scraped which this application does. Please visit [Monitoring Your Applications](https://docs.openshift.com/container-platform/4.4/monitoring/monitoring-your-own-services.html) and you can see an example of how to do that [here](https://servicesblog.redhat.com/2020/04/08/application-monitoring-openshift/), before running any of the below steps please enable monitoring using info from the links above**<br/>
 
+- **Create a servicemonitor using below code <ins>(Please enable cluster monitoring with info from above first)</ins>, servicemonitor label must match label specified from the deployment config above.**<br/>
 
+```
+cat << EOF | oc create -f -
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: prometheus-testflask-monitor
+  name: prometheus-testflask-monitor
+  namespace: $NAMESPACE
+spec:
+  endpoints:
+  - interval: 30s
+    targetPort: 8080
+    scheme: http
+  selector:
+    matchLabels:
+      app: testflask
+EOF
+```
+<br/>
+
+- **After the servicemonitor is created we can confirm by looking up the application metrics under monitoring-->metrics, one of the metrics exposed is Available_Keys(Type Available_Keys in query and run) so as more keys are added on the application webpage we should see this metric increase**
+
+- **We can also create alerts based on Application Metrics using the Openshift's Platform AlertManager via Prometheus,[Openshift Alerting](https://docs.openshift.com/container-platform/4.4/monitoring/cluster_monitoring/managing-cluster-alerts.html).We need to create an Alerting Rule to recieve Alerts**
+
+```
+cat << EOF | oc create -f -
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: testflask-alert
+  namespace: $NAMESPACE
+spec:
+  groups:
+  - name: app-testflask
+    rules:
+    - alert: DB_Alert
+      expr: Available_Keys{job="testflask"} > 4
+EOF
+```
+- **The above alert should only fire when the we have more than 4 keys in the application, go to the application webpage and add more than 4 keys to the DB, we should be able to get an alert when we go to Monitoring-Alerts-AlertManager UI(Top of Page)**
+
+#### Code Adapted from https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
