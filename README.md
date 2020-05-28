@@ -25,7 +25,7 @@
 - **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite skip all the database environment variables**</br>```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```
 
 - **If you are using your public version you don't need the source secret, so you can run new-app like this**<br/>
-```oc new-app python:3.6~git@https://github.com/MoOyeg/testFlask.git#v1.0 --name=$APP_NAME --source-secret=github-secret -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```
+```oc new-app python:3.6~git@https://github.com/MoOyeg/testFlask.git#v1.0 --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```
 
 - **Expose the service to the outside world with an openshift route**<br/>
 ```oc expose svc/$APP_NAME```
