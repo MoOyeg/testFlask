@@ -4,7 +4,7 @@
 
  
 ### Steps to Run
-## Steps 1 & 2 are only necessary if you are using a private fit repo**
+## Steps 1 & 2 are only necessary if you are using a private git repo
 
 1 **Create Secret in Openshift for Private/Cluster, example is for github ssh key**<br/>
 ```oc create secret generic $SECRET_NAME --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=$SSHKEY_PATH -n $NAMESPACE```
