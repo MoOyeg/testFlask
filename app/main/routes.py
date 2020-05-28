@@ -146,6 +146,10 @@ def db_remove():
 @bp.route('/metrics', methods=['GET'])
 def metrics():
     count = 0
+    global counter_db_available
+    global counter_db_inserted
+    global counter_db_removed
+    
     print("Metrics Been Scraped", file=sys.stderr)
     #Provide Some Metrics to External Platforms
     if Config.DB_INIT:
@@ -153,13 +157,21 @@ def metrics():
         for val in stored_values:
             count += 1
         counter_db_available = count
-        return make_response(jsonify({"Available Keys":"{}".format(counter_db_available)},
-        {"Total Insert Statements":"{}".format(counter_db_inserted)},
-        {"Total Remove Statements":"{}".format(counter_db_removed)}))
+        # return make_response(jsonify({"Available Keys":"{}".format(counter_db_available)},
+        # {"Total Insert Statements":"{}".format(counter_db_inserted)},
+        # {"Total Remove Statements":"{}".format(counter_db_removed)}))
+        response=make_response("Available Keys {}\nTotal Insert Statements {}\nTotal Remove Statements {}".format(counter_db_available,
+        counter_db_inserted,counter_db_removed), 200)
+        response.content_type = "text/plain"
+        return response
     else:
-         return make_response(jsonify({"Available Keys":""},
-        {"Total Insert Statements":""},
-        {"Total Remove Statements":""}))
+        response=make_response("Available Keys {}\nTotal Insert Statements {}\nTotal Remove Statements {}".format(counter_db_available,
+        counter_db_inserted,counter_db_removed), 200)
+        response.content_type = "text/plain"
+        return response
+        # return make_response(jsonify({"Available Keys":""},
+        # {"Total Insert Statements":""},
+        # {"Total Remove Statements":""}))
 
 
 @bp.route('/health', methods=['GET'])
