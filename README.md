@@ -63,7 +63,7 @@
       
 13 **Openshift also provides a way for you to use Openshift's platform monitoring to monitor your application metrics and provide alerts on those metrics.Note, this functionality is still in Tech Preview.This only works for applications that expose a /metrics endpoint that can be scraped which this application does. Please visit [Monitoring Your Applications](https://docs.openshift.com/container-platform/4.4/monitoring/monitoring-your-own-services.html) and you can see an example of how to do that [here](https://servicesblog.redhat.com/2020/04/08/application-monitoring-openshift/), before running any of the below steps please enable monitoring using info from the links above**<br/>
 
-- **Create a servicemonitor using below code <ins>(Please enable cluster monitoring with info from above first)</ins>, servicemonitor label must match label specified from the deployment config above.**<br/>
+   - **Create a servicemonitor using below code <ins>(Please enable cluster monitoring with info from above first)</ins>, servicemonitor label must match label specified from the deployment config above.**<br/>
 
 ```
 cat << EOF | oc create -f -
@@ -86,9 +86,9 @@ EOF
 ```
 <br/>
 
-- **After the servicemonitor is created we can confirm by looking up the application metrics under monitoring-->metrics, one of the metrics exposed is Available_Keys(Type Available_Keys in query and run) so as more keys are added on the application webpage we should see this metric increase**
+   - **After the servicemonitor is created we can confirm by looking up the application metrics under monitoring-->metrics, one of the metrics exposed is Available_Keys(Type Available_Keys in query and run) so as more keys are added on the application webpage we should see this metric increase**
 
-- **We can also create alerts based on Application Metrics using the Openshift's Platform AlertManager via Prometheus,[Openshift Alerting](https://docs.openshift.com/container-platform/4.4/monitoring/cluster_monitoring/managing-cluster-alerts.html).We need to create an Alerting Rule to recieve Alerts**
+   - **We can also create alerts based on Application Metrics using the Openshift's Platform AlertManager via Prometheus,[Openshift Alerting](https://docs.openshift.com/container-platform/4.4/monitoring/cluster_monitoring/managing-cluster-alerts.html).We need to create an Alerting Rule to recieve Alerts**
 
 ```
 cat << EOF | oc create -f -
@@ -105,6 +105,4 @@ spec:
       expr: Available_Keys{job="testflask"} > 4
 EOF
 ```
-- **The above alert should only fire when the we have more than 4 keys in the application, go to the application webpage and add more than 4 keys to the DB, we should be able to get an alert when we go to Monitoring-Alerts-AlertManager UI(Top of Page)**
-
-#### Code Adapted from https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
+   - **The above alert should only fire when the we have more than 4 keys in the application, go to the application webpage and add more than 4 keys to the DB, we should be able to get an alert when we go to Monitoring-Alerts-AlertManager UI(Top of Page)**
