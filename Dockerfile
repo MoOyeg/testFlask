@@ -3,6 +3,8 @@ FROM registry.redhat.io/ubi8
 #ENV Variables
 ENV APP_MODULE testapp:app
 ENV APP_CONFIG gunicorn.conf.py
+ENV MYSQL_NAME
+ENV MYSQL_DB
 
 # Install the required software
 RUN yum update -y && yum install git python3 -y
