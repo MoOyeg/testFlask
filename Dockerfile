@@ -1,4 +1,4 @@
-FROM ubi8
+FROM registry.redhat.io/ubi8 
 
 #ENV Variables
 ENV APP_MODULE testapp:app
