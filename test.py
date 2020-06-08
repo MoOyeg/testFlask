@@ -69,7 +69,7 @@ class UserModelCase(unittest.TestCase):
             db.session.commit()
 
         tempkey = KeyStore.query.filter_by(key=self.key).first()
-        self.assertEquals(tempkey,1)   
+        self.assertEquals(tempkey,None)   
  
 if __name__ == '__main__':
     unittest.main(verbosity=2)
