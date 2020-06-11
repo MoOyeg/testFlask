@@ -16,14 +16,14 @@
 ```oc create secret generic my-secret --from-literal=MYSQL_USER=$MYSQL_USER --from-literal=MYSQL_PASSWORD=$MYSQL_PASSWORD -n $NAMESPACE_DEV```
 
 4 **Create a new mysql instance(Application will use sqlite if no mysql detail is provided)**<br/>
-```oc new-app $MYSQL_NAME --env=MYSQL_DATABASE=$MYSQL_DB -l db=mysql -l app=testflask -n $NAMESPACE_DEV```
+```oc new-app $MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -l db=mysql -l app=testflask -n $NAMESPACE_DEV```
 
 5 **The new app above will fail because we have not provided the MYSQL user and password,we can provide the database secret to the mysql deployment**<br/>
-```oc set env dc/$MYSQL_NAME --from=secret/my-secret -n $NAMESPACE_DEV```
+```oc set env dc/$MYSQL_HOST --from=secret/my-secret -n $NAMESPACE_DEV```
 
-6 **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite in the same pod instead of the mysql we created above skip all the database environment variables**</br>                                     - Private Repo with Source Secret<br/>  ```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE_DEV```<br/>
-    - Public Repo without Source Secret(s2i Building)<br/> ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE_DEV```<br/>
-    - Public Repo using the Dockerfile to build(Docker Strategy)<br/>```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE_DEV```<br/> 
+6 **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite in the same pod instead of the mysql we created above skip all the database environment variables**</br>                                     - Private Repo with Source Secret<br/>  ```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_HOST --env=MYSQL_DB=$MYSQL_DATABASE -n $NAMESPACE_DEV```<br/>
+    - Public Repo without Source Secret(s2i Building)<br/> ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_HOST --env=MYSQL_DB=$MYSQL_DATABASE -n $NAMESPACE_DEV```<br/>
+    - Public Repo using the Dockerfile to build(Docker Strategy)<br/>```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_NAME=$MYSQL_HOST --env=MYSQL_DB=$MYSQL_DATABASE -n $NAMESPACE_DEV```<br/> 
 
 7 **Expose the service to the outside world with an openshift route**<br/>
 ```oc expose svc/$APP_NAME -n $NAMESPACE_DEV```
@@ -35,8 +35,8 @@
 
 10 **To make the seperate deployments appear as one app in the Developer Console, you can label them. This step does not change app behaviour or performance is a visual aid and would not be required if app was created from developer console**<br/>
 ```oc label dc/$APP_NAME app.kubernetes.io/part-of=$APP_NAME```<br/>
-```oc label dc/$MYSQL_NAME app.kubernetes.io/part-of=$APP_NAME```<br/>
-```oc annotate dc/$APP_NAME app.openshift.io/connects-to=$MYSQL_NAME```<br/>
+```oc label dc/$MYSQL_HOST app.kubernetes.io/part-of=$APP_NAME```<br/>
+```oc annotate dc/$APP_NAME app.openshift.io/connects-to=$MYSQL_HOST```<br/>
 
 11 **You can attach a WebHook to your application , so when there is application code change the application is rebuilt to take adavantage of that, you can see steps to this via the developer console .Opensshift will create the html link and secret for you which you can configure in github/gitlab other generic VCS. See more here [Openshift Triggers](https://docs.openshift.com/container-platform/4.4/builds/triggering-builds-build-hooks.html) and see [github webhooks](https://developer.github.com/webhooks/)**<br/>
     -  To get the Webhook Link from the CLI<br/>
