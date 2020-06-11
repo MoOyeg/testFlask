@@ -18,7 +18,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_USERNAME = os.environ.get('MYSQL_USER') or ""
     SQLALCHEMY_DATABASE_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ""
     SQLALCHEMY_DATABASE_HOST = os.environ.get('MYSQL_NAME') or ""
-    SQLALCHEMY_DATABASE_DB = os.environ.get('MYSQL_DB') or ""
+    SQLALCHEMY_DATABASE_DB = os.environ.get('MYSQL_DATABASE') or ""
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DB_INIT = False
     
