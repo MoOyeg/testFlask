@@ -7,29 +7,29 @@
 ## Steps 1 & 2 are only necessary if you are using a private git repo
 
 1 **Create Secret in Openshift for Private/Cluster, example is for github ssh key**<br/>
-```oc create secret generic $SECRET_NAME --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=$SSHKEY_PATH -n $NAMESPACE```
+```oc create secret generic $SECRET_NAME --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=$SSHKEY_PATH -n $NAMESPACE_DEV```
 
 2 **Link Secret with your Service Account,the default Service account for builds is usually builder so will link with builder**<br/>
-```oc secrets link builder $SECRET_NAME -n $NAMESPACE```
+```oc secrets link builder $SECRET_NAME -n $NAMESPACE_DEV```
 
 3 **Create a New Secret to host our database credentials**<br/>
-```oc create secret generic my-secret --from-literal=MYSQL_USER=$MYSQL_USER --from-literal=MYSQL_PASSWORD=$MYSQL_PASSWORD -n $NAMESPACE```
+```oc create secret generic my-secret --from-literal=MYSQL_USER=$MYSQL_USER --from-literal=MYSQL_PASSWORD=$MYSQL_PASSWORD -n $NAMESPACE_DEV```
 
 4 **Create a new mysql instance(Application will use sqlite if no mysql detail is provided)**<br/>
-```oc new-app $MYSQL_NAME --env=MYSQL_DATABASE=$MYSQL_DB -l db=mysql -l app=testflask -n $NAMESPACE```
+```oc new-app $MYSQL_NAME --env=MYSQL_DATABASE=$MYSQL_DB -l db=mysql -l app=testflask -n $NAMESPACE_DEV```
 
 5 **The new app above will fail because we have not provided the MYSQL user and password,we can provide the database secret to the mysql deployment**<br/>
-```oc set env dc/$MYSQL_NAME --from=secret/my-secret -n $NAMESPACE```
+```oc set env dc/$MYSQL_NAME --from=secret/my-secret -n $NAMESPACE_DEV```
 
-6 **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite in the same pod instead of the mysql we created above skip all the database environment variables**</br>                                     - Private Repo with Source Secret<br/>  ```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```<br/>
-    - Public Repo without Source Secret(s2i Building)<br/> ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```<br/>
-    - Public Repo using the Dockerfile to build(Docker Strategy)<br/>```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE```<br/> 
+6 **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html), <br/>**Example below uses source-secret created earlier,if you want to use sqlite in the same pod instead of the mysql we created above skip all the database environment variables**</br>                                     - Private Repo with Source Secret<br/>  ```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret=github-secret -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE_DEV```<br/>
+    - Public Repo without Source Secret(s2i Building)<br/> ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE_DEV```<br/>
+    - Public Repo using the Dockerfile to build(Docker Strategy)<br/>```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_NAME=$MYSQL_NAME --env=MYSQL_DB=$MYSQL_DB -n $NAMESPACE_DEV```<br/> 
 
 7 **Expose the service to the outside world with an openshift route**<br/>
-```oc expose svc/$APP_NAME```
+```oc expose svc/$APP_NAME -n $NAMESPACE_DEV```
 
 8 **We can provide your database secret to your app deployment, so your app can use those details**<br/>
-```oc set env dc/$APP_NAME --from=secret/my-secret -n $NAMESPACE```
+```oc set env dc/$APP_NAME --from=secret/my-secret -n $NAMESPACE_DEV```
 
 9 **You should be able to log into the openshift console now to get a better look at the application, all the commands above can be run in the console, to get more info about the developer console please visit [Openshift Developer Console](https://docs.openshift.com/container-platform/4.4/applications/application_life_cycle_management/odc-creating-applications-using-developer-perspective.html)**
 
@@ -49,16 +49,16 @@
 12 **It is important to be able to provide the status of your application to the platform so the platform does not send requests to application instances not ready or available to recieve them, this can be done with a liveliness and a health probe, please see [Health Checks](https://docs.openshift.com/container-platform/4.4/applications/application-health.html). This application has  sample /health and /ready uri that provide responses about the status of the application**<br/>
 
    - **Create a readiness probe for our application**<br/>
-```oc set probe dc/$APP_NAME --readiness --get-url=http://:8080/ready --initial-delay-seconds=10```<br/>
+```oc set probe dc/$APP_NAME --readiness --get-url=http://:8080/ready --initial-delay-seconds=10 -n $NAMESPACE_DEV```<br/>
 
    - **Create a liveliness probe for our application**<br/>
-```oc set probe dc/$APP_NAME --liveness --get-url=http://:8080/health --timeout-seconds=30 --failure-threshold=3 --period-seconds=10 -n $NAMESPACE```<br/>
+```oc set probe dc/$APP_NAME --liveness --get-url=http://:8080/health --timeout-seconds=30 --failure-threshold=3 --period-seconds=10 -n $NAMESPACE_DEV```<br/>
 
    - **We can test Openshift Readiness by opening the application page and setting the application ready to down, after a while the application endpoint will be removed from the list of endpoints that recieve traffic for the service,you can confirm by**<br/>
-      - ```oc get ep/$APP_NAME -n $NAMESPACE```<br/>
+      - ```oc get ep/$APP_NAME -n $NAMESPACE_DEV```<br/>
       - Since the readiness removes the pod endpoint from the service we will not be able to access the app page anymore<br/>
       - We will need to log into the pod to enable the readiness back <br/>
-           - ```POD_NAME=$(oc get pods -l deploymentconfig=$APP_NAME -n $NAMESPACE -o name)```<br/>
+           - ```POD_NAME=$(oc get pods -l deploymentconfig=$APP_NAME -n $NAMESPACE_DEV -o name)```<br/>
            - Exec the Pod and curl the pod API to start the pod readiness<br/>
            - ```oc exec $POD_NAME curl http://localhost:8080/ready_down?status=up```<br/>
       
@@ -74,7 +74,7 @@ metadata:
   labels:
     k8s-app: prometheus-testflask-monitor
   name: prometheus-testflask-monitor
-  namespace: $NAMESPACE
+  namespace: $NAMESPACE_DEV
 spec:
   endpoints:
   - interval: 30s
@@ -97,7 +97,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: testflask-alert
-  namespace: $NAMESPACE
+  namespace: $NAMESPACE_DEV
 spec:
   groups:
   - name: app-testflask
