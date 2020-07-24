@@ -14,7 +14,7 @@
 **Create Secret in Openshift for Private/Cluster, example is for github ssh key**<br/>
 ```oc create secret generic $SECRET_NAME --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=$SSHKEY_PATH -n $NAMESPACE_DEV```
 
- **Link Secret with your Service Account,the default Service account for builds is usually builder so will link with builder**<br/>
+ Link Secret with your Service Account,the default Service account for builds is usually builder so will link with builder<br/>
 ```oc secrets link builder $SECRET_NAME -n $NAMESPACE_DEV```
 
 3 **Create a New Secret to host our database credentials**<br/>
