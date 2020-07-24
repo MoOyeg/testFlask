@@ -39,9 +39,9 @@
 9 **You should be able to log into the openshift console now to get a better look at the application, all the commands above can be run in the console, to get more info about the developer console please visit [Openshift Developer Console](https://docs.openshift.com/container-platform/4.4/applications/application_life_cycle_management/odc-creating-applications-using-developer-perspective.html)**
 
 10 **To make the seperate deployments appear as one app in the Developer Console, you can label them. This step does not change app behaviour or performance is a visual aid and would not be required if app was created from developer console**<br/>
-```oc label dc/$APP_NAME app.kubernetes.io/part-of=$APP_NAME```<br/>
-```oc label dc/$MYSQL_HOST app.kubernetes.io/part-of=$APP_NAME```<br/>
-```oc annotate dc/$APP_NAME app.openshift.io/connects-to=$MYSQL_HOST```<br/>
+```oc label dc/$APP_NAME app.kubernetes.io/part-of=$APP_NAME -n $NAMESPACE_DEV```<br/>
+```oc label dc/$MYSQL_HOST app.kubernetes.io/part-of=$APP_NAME -n $NAMESPACE_DEV```<br/>
+```oc annotate dc/$APP_NAME app.openshift.io/connects-to=$MYSQL_HOST -n $NAMESPACE_DEV```<br/>
 
 11 **You can attach a WebHook to your application , so when there is application code change the application is rebuilt to take adavantage of that, you can see steps to this via the developer console .Opensshift will create the html link and secret for you which you can configure in github/gitlab other generic VCS. See more here [Openshift Triggers](https://docs.openshift.com/container-platform/4.4/builds/triggering-builds-build-hooks.html) and see [github webhooks](https://developer.github.com/webhooks/)**<br/>
     -  To get the Webhook Link from the CLI<br/>
