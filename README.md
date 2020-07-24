@@ -87,7 +87,7 @@ spec:
     scheme: http
   selector:
     matchLabels:
-      app: testflask
+      app: $APP_NAME
 EOF
 ```
 <br/>
@@ -105,7 +105,7 @@ metadata:
   namespace: $NAMESPACE_DEV
 spec:
   groups:
-  - name: app-testflask
+  - name: $APP_NAME
     rules:
     - alert: DB_Alert
       expr: Available_Keys{job="testflask"} > 4
