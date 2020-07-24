@@ -1,15 +1,20 @@
 # testFlask
 
-## Test Flask is a simple flask application to show some parts of the openshift application process
+## Test Flask is a simple flask application to show some parts of the openshift application process</br>
+## Sample Envirtonment File included
 
  
-### Steps to Run
-## Steps 1 & 2 are only necessary if you are using a private git repo
+### Steps to Run<br/>
 
-1 **Create Secret in Openshift for Private/Cluster, example is for github ssh key**<br/>
+1 **Create Necessary Projects**<br/>
+```oc adm new-project $NAMESPACE_DEV```<br/>
+```oc adm new-project $NAMESPACE_PROD```<br/>    
+
+2 **Step 2 Only necessary if you are using a private repo**<br/>
+**Create Secret in Openshift for Private/Cluster, example is for github ssh key**<br/>
 ```oc create secret generic $SECRET_NAME --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=$SSHKEY_PATH -n $NAMESPACE_DEV```
 
-2 **Link Secret with your Service Account,the default Service account for builds is usually builder so will link with builder**<br/>
+ **Link Secret with your Service Account,the default Service account for builds is usually builder so will link with builder**<br/>
 ```oc secrets link builder $SECRET_NAME -n $NAMESPACE_DEV```
 
 3 **Create a New Secret to host our database credentials**<br/>
