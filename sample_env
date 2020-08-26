@@ -1,3 +1,4 @@
+#App
 export SECRET_NAME="github-secret"
 export SSHKEY_PATH="/root/.ssh/env_key1"
 export MYSQL_USER="github-secret"
@@ -8,7 +9,13 @@ export MYSQL_HOST="mysql"
 export NAMESPACE_DEV="apptest"
 export NAMESPACE_PROD="appprod"
 export APP_NAME="testflask"
-export JENKINS_NAMESPACE="1234-jenkins"
 export APP_CONFIG="gunicorn.conf.py"
 export APP_MODULE="testapp:app"
 export MYSQL_DATABASE="testdb"
+
+
+#Jenkins
+export JENKINS_NAMESPACE="1234-jenkins"
+
+#Tekton
+export TEKTON_NAMESPACE=1234-Tekton
