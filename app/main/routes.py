@@ -113,7 +113,8 @@ def index():
             db.session.commit()
             counter_db_inserted += 1
         else:
-            flash('Value already exists for key {}'.format(key))
+            print("key - {}: Already in DB".format(key), file=sys.stderr)
+            #flash('Value already exists for key {}'.format(key))
             temp_db = refresh_db(fullurl)
             return render_template('index.html', form=form, configs=configs,
             db_value=temp_db[0],db_time=temp_db[1], db_remove=temp_db[2],
@@ -212,3 +213,27 @@ def ready_down():
         ready_status_ok = True
 
     return redirect('/index')
+
+
+@bp.route('/insert', methods=['POST'])
+def insert():    
+    try:
+        temp_key = request.args.get("key")
+        temp_value = request.form["value"]
+        insertime = datetime.utcnow()
+        
+        #Check if Key Already Exists
+        if KeyStore.query.filter_by(key=temp_key).first() is None:
+            temp = KeyStore(timestamp=insertime, key=temp_key, value=temp_value)
+            db.session.add(temp)
+            db.session.commit()
+            counter_db_inserted += 1
+            return make_response(jsonify({'Status': 'OK'}), 200)
+        else:
+            print("key - {}: Already in DB".format(temp_key), file=sys.stderr)
+            return make_response(jsonify({'Status': 'Duplicate Key Could Not Be Added'}), 503)  
+    except:
+        return make_response(jsonify({'Status': 'Server Could Not Process'}), 503)
+
+        
+ 
