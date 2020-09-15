@@ -216,7 +216,17 @@ def ready_down():
 
 
 @bp.route('/insert', methods=['POST'])
-def insert():    
+def insert(): 
+
+    global counter_db_inserted
+
+    if not Config.DB_INIT:
+        try:
+            db.create_all()
+        except:
+            pass
+        Config.DB_INIT = True; 
+
     try:
         temp_key = request.args.get("key")
         temp_value = request.args.get("value")
