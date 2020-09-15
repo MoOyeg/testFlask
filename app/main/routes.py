@@ -219,7 +219,7 @@ def ready_down():
 def insert():    
     try:
         temp_key = request.args.get("key")
-        temp_value = request.form["value"]
+        temp_value = request.args.get("value")
         insertime = datetime.utcnow()
         
         #Check if Key Already Exists
