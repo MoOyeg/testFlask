@@ -165,4 +165,32 @@ spec:
 EOF
 ```
    - **The above alert should only fire when the we have more than 4 keys in the application, go to the application webpage and add more than 4 keys to the DB, we should be able to get an alert when we go to Monitoring-Alerts-AlertManager UI(Top of Page)**
-#test
+
+## Openshift Serverless
+16 **Openshift provides serverless functionality via the [Openshift serverless operator](https://docs.openshift.com/container-platform/4.5/serverless/architecture/serverless-serving-architecture.html), Follow steps in documenation to create serveless installation**<br/>
+
+**Create a sample serverless application below and run application**
+
+```
+cat << EOF | oc create -f -
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: testflask-serverless
+  namespace: $NAMESPACE_DEV
+spec:
+  template:
+    spec:
+      containers:
+        - image: image-registry.openshift-image-registry.svc:5000/${NAMESPACE_DEV}/${APP_NAME}:latest      
+          env:
+          - name: APP_CONFIG
+            value: "gunicorn.conf.py"
+          - name: APP_MODULE
+            value: "testapp:app"
+          - name: MYSQL_HOST
+            value: $MYSQL_HOST
+          - name: MYSQL_DATABASE 
+            value: $MYSQL_DATABASE
+EOF
+```
