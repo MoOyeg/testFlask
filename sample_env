@@ -12,10 +12,12 @@ export APP_NAME="testflask"
 export APP_CONFIG="gunicorn.conf.py"
 export APP_MODULE="testapp:app"
 export MYSQL_DATABASE="testdb"
-
+export SECRET_NAME="my-secret"
+export CODE_URL=https://github.com/MoOyeg/testFlask.git
 
 #Jenkins
 export JENKINS_NAMESPACE="1234-jenkins"
 
 #Tekton
-export TEKTON_NAMESPACE=1234-Tekton
+export TEKTON_NAMESPACE="1234-tekton"
+export TEKTON_PVC_NAME=tekton-repo
