@@ -1,10 +1,28 @@
 # testFlask
 
-## Test Flask is a simple flask application to show some parts of the openshift application process</br>
-## Sample Envirtonment File included
+## Test Flask is a simple flask application to show some parts of the openshift application process. It's been broken down into a series of modules that cover likely Openshift Use Cases</br>
+----------
+## Modules
+### Module 1: testFlask - Main Application(This Page)
+  1. s2i Build
+2. Git Webhooks
+3. Openshift Health Checks
+4. Horizontal Autoscaling
+5. Vertical Autoscaling
+6. User Workload Monitoring
+7. Serverless Example
 
- 
+### Module 2: testFlask-Jenkins - Create Same Application with a Jenkins Pipeline in Openshift
+
+### Module 3: testFlask-Tekton - Create Same Application with a Tekton Pipleine in Openshift
+
+### Module 4: testFlask-Oauth - Application authentication using Openshift Oauth Proxy<br/>
+<br/>
+
 ### Steps to Run<br/>
+
+### Source Environment Variables
+`eval "$(curl https://raw.githubusercontent.com/MoOyeg/testFlask/master/sample_env)"`
 
 1 **Create Necessary Projects**<br/>
 ```oc adm new-project $NAMESPACE_DEV```<br/>
