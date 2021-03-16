@@ -4,19 +4,19 @@
 ----------
 ## Modules
 ### Module 1: testFlask - Main Application(This Page)
-  1. s2i Build
-2. Git Webhooks
-3. Openshift Health Checks
-4. Horizontal Autoscaling
-5. Vertical Autoscaling
-6. User Workload Monitoring
-7. Serverless Example
+  1. [s2i Build](https://github.com/MoOyeg/testFlask#source-environment-variables)
+2. [Git Webhooks](https://github.com/MoOyeg/testFlask#source-environment-variables)
+3. [Openshift Health Checks](https://github.com/MoOyeg/testFlask#source-environment-variables)
+4. [Horizontal Autoscaling](https://github.com/MoOyeg/testFlask#source-environment-variables)
+5. [Vertical Autoscaling](https://github.com/MoOyeg/testFlask#source-environment-variables)
+6. [User Workload Monitoring](https://github.com/MoOyeg/testFlask#source-environment-variables)
+7. [Serverless Example](https://github.com/MoOyeg/testFlask#source-environment-variables)
 
-### Module 2: testFlask-Jenkins - Create Same Application with a Jenkins Pipeline in Openshift
+### Module 2: [testFlask-Jenkins](https://github.com/MoOyeg/testFlask#source-environment-variables) - Create Same Application with a Jenkins Pipeline in Openshift
 
-### Module 3: testFlask-Tekton - Create Same Application with a Tekton Pipleine in Openshift
+### Module 3: [testFlask-Tekton](https://github.com/MoOyeg/testFlask#source-environment-variables) - Create Same Application with a Tekton Pipleine in Openshift
 
-### Module 4: testFlask-Oauth - Application authentication using Openshift Oauth Proxy<br/>
+### Module 4: [testFlask-Oauth](https://github.com/MoOyeg/testFlask#source-environment-variables) - Application authentication using Openshift Oauth Proxy<br/>
 <br/>
 
 ### Steps to Run<br/>
