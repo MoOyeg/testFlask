@@ -1,6 +1,6 @@
 # testFlask
 
-## Test Flask is a simple flask application to show some parts of the openshift application process. It's been broken down into a series of modules that cover likely Openshift Use Cases</br>
+## Test Flask is a simple flask application to show some parts of the openshift application process.  It's been broken down into a series of modules that cover likely Openshift Use Cases</br>
 ----------
 ## Modules
 ### Module 1: testFlask - Main Application(This Page)
