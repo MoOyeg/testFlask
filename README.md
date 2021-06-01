@@ -18,7 +18,7 @@
 
 ### Module 4: [testFlask-Oauth](https://github.com/MoOyeg/testFlask-Oauth-Proxy) - Application authentication using Openshift Oauth Proxy<br/>
 
-### Module 5: [testflask-gitops](https://github.com/MoOyeg/testflask-gitops) - ArgoCD Application Contionous Deployment<br/>
+### Module 5: [testflask-gitops](https://github.com/MoOyeg/testflask-gitops) - ArgoCD Application Continous Deployment<br/>
 <br/>
 
 ### Steps to Run<br/>
