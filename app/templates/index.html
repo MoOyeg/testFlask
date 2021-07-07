@@ -1,9 +1,21 @@
 {% extends 'bootstrap/base.html' %}
 
-{% block content %}
- 
-    <h1>Openshift Demo</h1>
+{% block styles %}
+{{super()}}
+    <!-- <link rel="stylesheet" href="{{url_for('static', filename='header.css')}}">  -->
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+{% endblock %}
 
+{% block head %}
+<div class="header">
+    <!-- <img src="{{url_for('static', filename='red-hat-openshift-vector-logo.png')}}" alt="openshift_logo" /> -->
+    <h1>TestFlask Demo Application </h1>
+</div>
+{% endblock %}
+
+{% block content %}
+   
     <h2> Active Configuration </h2>
       {% for configuration,value in configs.items() %}         
           <div><p>{{ configuration }}: {{ value }} </b></p></div>
@@ -63,6 +75,4 @@
     <td style="padding:0 15px 0 15px;"><a href={{ health_url}}?status=up>UP</a></td>
     </tr>
     </table>
-
-
 {% endblock %}

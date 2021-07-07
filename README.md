@@ -4,13 +4,13 @@
 ----------
 ## Modules
 ### Module 1: testFlask - Main Application(This Page)
-  1. [s2i Build](https://github.com/MoOyeg/testFlask#source-environment-variables)
-2. [Git Webhooks](https://github.com/MoOyeg/testFlask#source-environment-variables)
-3. [Openshift Health Checks](https://github.com/MoOyeg/testFlask#source-environment-variables)
-4. [Horizontal Autoscaling](https://github.com/MoOyeg/testFlask#source-environment-variables)
-5. [Vertical Autoscaling](https://github.com/MoOyeg/testFlask#source-environment-variables)
-6. [User Workload Monitoring](https://github.com/MoOyeg/testFlask#source-environment-variables)
-7. [Serverless Example](https://github.com/MoOyeg/testFlask#source-environment-variables)
+  1. [s2i Build](https://github.com/MoOyeg/testFlask#source-environment-variables)<br/>
+  2. [Git Webhooks](https://github.com/MoOyeg/testFlask#webhooks)<br/>
+  3. [Openshift Health Checks](https://github.com/MoOyeg/testFlask#health-checks)<br/>
+  4. [Horizontal Autoscaling](https://github.com/MoOyeg/testFlask#horizontal-autoscaling-with-cpumemory)<br/>
+  5. [Vertical Autoscaling](https://github.com/MoOyeg/testFlask#vertical-pod-autoscaler)<br/>
+  6. [User Workload Monitoring](https://github.com/MoOyeg/testFlask#monitoring-and-autoscaling-application-metrics)<br/>
+  7. [Serverless Example](https://github.com/MoOyeg/testFlask#openshift-serverless)<br/>
 
 ### Module 2: [testFlask-Jenkins](https://github.com/MoOyeg/testFlask-Jenkins) - Create Same Application with a Jenkins Pipeline in Openshift
 
