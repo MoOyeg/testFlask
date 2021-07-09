@@ -13,6 +13,7 @@ export APP_CONFIG="gunicorn.conf.py"
 export APP_MODULE="testapp:app"
 export MYSQL_DATABASE="testdb"
 export SECRET_NAME="my-secret"
+export REPO_SECRET_NAME="repo-secret"
 export CODE_URL=https://github.com/MoOyeg/testFlask.git
 
 #Jenkins
