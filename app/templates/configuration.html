@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<div class="container-fluid">
+    <h1 class="mt-4">Active Configuration</h1>
+    <p>Here's the active configuration of the application as provided by Openshift environment variables</p>
+    <p>To view how to set this variables <a href="https://github.com/MoOyeg/testFlask#steps-to-run">Application github link</a></p>
+    <p>        
+        <!-- <code>#page-content-wrapper</code> -->
+        {% for configuration,value in configs.items() %}
+        <div>
+            <p>{{ configuration }}: {{ value }} </b></p>
+        </div>
+        {% endfor %}
+    </p>
+</div>
+
+{% endblock %}

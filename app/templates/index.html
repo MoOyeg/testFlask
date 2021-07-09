@@ -1,78 +1,37 @@
-{% extends 'bootstrap/base.html' %}
+{% extends 'base.html' %}
 
-{% block styles %}
-{{super()}}
-    <!-- <link rel="stylesheet" href="{{url_for('static', filename='header.css')}}">  -->
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
 
 {% block head %}
-<div class="header">
-    <!-- <img src="{{url_for('static', filename='red-hat-openshift-vector-logo.png')}}" alt="openshift_logo" /> -->
-    <h1>TestFlask Demo Application </h1>
-</div>
+{{ super() }}
 {% endblock %}
 
 {% block content %}
-   
-    <h2> Active Configuration </h2>
-      {% for configuration,value in configs.items() %}         
-          <div><p>{{ configuration }}: {{ value }} </b></p></div>
-      {% endfor %}
-
-    <h2> Add Value to Database </h2>
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.key.label }}<br>
-            {{ form.key(size=32) }}
-        </p>
-        <p>
-            {{ form.value.label }}<br>
-            {{ form.value(size=32) }}
-        </p>
-        <p>{{ form.add() }}</p>
-    </form>
- 
-    <h2> Database Value</h2>
-    <table style= "border: 1px solid black; table-layout: auto; width: 750px;">
-   <tr>
-    <th>Timestamp</th>
-    <th>Key</th>
-    <th>Value</th>
-    <th>Remove<th>
-   </tr> 
-    
-      {% for key,value in db_value.items() %}  
-      <tr>       
-         <!--<div><p>Timestamp:{{ db_time[key] }} {{ key }}: {{ value }} </b></p></div> -->
-        <td>{{ db_time[key] }}</td>
-        <td>{{ key }}</td>
-        <td>{{ value }}</td>
-        <td><a href={{ db_remove[key] }}>Remove</a></td>
-      </tr>
-      {% endfor %}  
-    </table>
-
-    <h2> Application Status </h2>
-    <p> Application Ready?: {{ ready }}</p>
-    <table style= "border: 1px solid black; table-layout: auto; width: 750px;">
-    <th>Change Application Readiness</th>
-    <tr>
-    <td style="padding:0 15px 0 15px;"><a href={{ ready_url}}?status=down>DOWN </a></td>
-    <td style="padding:0 15px 0 15px;"><a href={{ ready_url}}?status=up>UP</a></td>
-    </tr>    
-    </table>
- 
+{{ super() }}
+<div class="container-fluid">
+    <h1 class="mt-4">TestFlask Demo Application</h1>
+    <p>Test Flask is a simple flask application to show some parts of the openshift application process. It's been
+        broken down into a series of modules that cover likely Openshift Use Cases</p>
+    <p>Instructions for how to use the Application are available at <a
+            href="https://github.com/MoOyeg/testFlask">Application github link</a></p>
     <p></p>
-    <p> Application Healthy?: {{ health }}</p>
-    <table>
-    <table style= "border: 1px solid black; table-layout: auto; width: 750px;">
-    <th>Change Application Health</th>
-    <tr>
-    <td style="padding:0 15px 0 15px;"><a href={{ health_url}}?status=down>DOWN </a></td>
-    <td style="padding:0 15px 0 15px;"><a href={{ health_url}}?status=up>UP</a></td>
-    </tr>
-    </table>
+    <p>
+    <dl>
+        <dt>Application Configuration via Environment Variables</dt>
+        <dd>- <a href="{{url_for('main.configuration')}}">Application Configuration Tab</a> [View Configured Enviroment
+            Variables]</dd>
+        <p></p>
+        <dt>Simple Key-Value Database Use Case </dt>
+        <dd>- <a href="{{url_for('main.database')}}">Database Tab</a> [Test Database Template on Openshift]</dd>
+        <p></p>
+        <dt>Health and Readiness Checks </dt>
+        <dd>- <a href="{{url_for('main.health_status')}}" Application Health Tab</a> [Test Openshift Health and
+                Readiness Checks]</dd>
+    </dl>
+    </p>
+</div>
+
+</html>
+
 {% endblock %}

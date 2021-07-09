@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<div class="container-fluid">
+    <h1 class="mt-4">Key Value Database</h1>
+    <p>Instructions for how to use the Application are available at <a
+            href="https://github.com/MoOyeg/testFlask">Application github link</a></p>
+    <p></p>
+    <p>
+    <form action="" method="post" novalidate>
+        <div class="form-group">
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.key.label }}<br>
+                {{ form.key(size=32) }}
+            </p>
+            <p>
+                {{ form.value.label }}<br>
+                {{ form.value(size=32) }}
+            </p>
+            <p>{{ form.add(class_="btn btn-primary") }}</p>
+        </div>
+    </form>
+
+    <div class="table-responsive-md">
+        <table class="table table-hover">
+            <tr>
+                <th>Timestamp</th>
+                <th>Key</th>
+                <th>Value</th>
+                <th>Remove</th>
+            </tr>
+
+            {% for key,value in db_value.items() %}
+            <tr>
+                <td>{{ db_time[key] }}</td>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+                <td><a href={{ db_remove[key] }}>Remove</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    </p>
+</div>
+
+</html>
+
+{% endblock %}

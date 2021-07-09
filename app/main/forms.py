@@ -4,8 +4,6 @@ from wtforms import StringField, SubmitField, TextAreaField
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Length
 
-
-
 class PostForm(FlaskForm):
     key = StringField('Key', validators=[DataRequired()])
     value = StringField('Value', validators=[DataRequired()])
