@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<div class="container-fluid">
+
+    <div class="jumbotron" style="background-color:#dee2e68f;">
+        <h1 class="display-4">Application Health Status:</h1>
+        {% if health %}
+        <p class="display-4" style="color:green">GOOD</p>
+        {% else %}
+        <p class="display-4" style="color:red">BAD</>
+            {% endif %}
+
+            {% if health %}
+        <p class="lead">Application is in Good Health and should pass Openshift Health Checks</p>
+        {% else %}
+        <p class="lead">Application is in Bad Health and will fail Openshift Health Checks</p>
+        {% endif %}
+        <hr class="my-6">
+        <p class="lead">
+            {% if health %}
+            <a class="btn btn-danger" href="{{ health_url}}?status=down" role="button">Down Application?</a>
+            {% else %}
+            <a class="btn btn-success" href="{{ health_url}}?status=up" role="button">Bring Up Application?</a>
+            {% endif %}
+        </p>
+        <p></p>
+    </div>
+
+
+
+    <div class="jumbotron" style="background-color:#dee2e68f;">
+        <h1 class="display-4">Application Ready Status:</h1>
+        {% if ready %}
+        <p class="display-4" style="color:green">GOOD</p>
+        {% else %}
+        <p class="display-4" style="color:red">BAD</>
+            {% endif %}
+
+            {% if ready %}
+        <p class="lead">Application is Ready and should pass Openshift Readiness Checks</p>
+        {% else %}
+        <p class="lead">Application is not Ready and will fail Openshift Readiness Checks</p>
+        {% endif %}
+        <hr class="my-6">
+        <p class="lead">
+            {% if health %}
+            <a class="btn btn-danger" href="{{ ready_url}}?status=down" role="button">Down Application?</a>
+            {% else %}
+            <a class="btn btn-success" href="{{ ready_url}}?status=up" role="button">Bring Up Application?</a>
+            {% endif %}
+        </p>
+        <p></p>
+    </div>
+</div>
+
+{% endblock %}

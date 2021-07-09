@@ -1,20 +1,85 @@
-{% block navbar %}
-    <nav class="navbar navbar-default">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{{ url_for('main.index') }}">Microblog</a>
-            </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
+<!DOCTYPE html>
+<html lang="en">
+<!-- #Credit: Bootstrap Template from https://github.com/StartBootstrap/startbootstrap-simple-sidebar-->
 
-                </ul>
+{% block head %}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description"
+        content="Sample Flask Application to help walkthough using Openshift for Python Development - github.com/mooyeg/testFlask" />
+    <meta name="author" content="Moyo Oyegunle,github.com/MoOyeg" />
+    <title>TestFlask Demo Application</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='assets/favicon.ico')}}" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="{{url_for('static', filename='css/styles.css')}}" rel="stylesheet" />
+</head>
+{% endblock %}
+
+
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar-->
+        <div class="border-end bg-white" id="sidebar-wrapper">
+            <div class="sidebar-heading border-bottom bg-light">Menu</div>
+            <div class="list-group list-group-flush">
+                <a class="list-group-item list-group-item-action list-group-item-light p-3"
+                    href="{{url_for('main.index')}}">Home</a>
+                <a class="list-group-item list-group-item-action list-group-item-light p-3"
+                    href="{{url_for('main.configuration')}}">Application Configuration</a>
+                <a class="list-group-item list-group-item-action list-group-item-light p-3"
+                    href="{{url_for('main.database')}}">Database</a>
+                <a class="list-group-item list-group-item-action list-group-item-light p-3"
+                    href="{{url_for('main.health_status')}}">Application Health Status</a>
             </div>
         </div>
-    </nav>
-{% endblock %}
+        <!-- Page content wrapper-->
+        <div id="page-content-wrapper">
+            <!-- Top navigation-->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-primary" id="sidebarToggle">Toggle Menu</button>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation"><span
+                            class="navbar-toggler-icon"></span></button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+                            <!-- <li class="nav-item active"><a class="nav-link" href="#!">Home</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#!">Link</a></li> -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Openshift
+                                    Links</a>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item"
+                                        href="https://docs.openshift.com/container-platform/4.7/welcome/index.html">Openshift
+                                        Documentation</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="https://learn.openshift.com/">Openshift Learning</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item"
+                                        href="https://developers.redhat.com/developer-sandbox">Openshift Developer
+                                        Sandbox</a>
+                                    <div class="dropdown-divider"></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <!-- Page content-->
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="{{url_for('static', filename='js/scripts.js')}}"></script>
+</body>
+
+
+</html>
