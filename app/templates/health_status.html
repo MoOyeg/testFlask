@@ -52,7 +52,7 @@
         {% endif %}
         <hr class="my-6">
         <p class="lead">
-            {% if health %}
+            {% if ready %}
             <a class="btn btn-danger" href="{{ ready_url}}?status=down" role="button">Down Application?</a>
             {% else %}
             <a class="btn btn-success" href="{{ ready_url}}?status=up" role="button">Bring Up Application?</a>
