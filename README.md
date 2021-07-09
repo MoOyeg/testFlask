@@ -4,6 +4,7 @@
 ----------
 ## Modules
 ### Module 1: testFlask - Main Application(This Page)
+
   1. [s2i Build](https://github.com/MoOyeg/testFlask#source-environment-variables)<br/>
   2. [Git Webhooks](https://github.com/MoOyeg/testFlask#webhooks)<br/>
   3. [Openshift Health Checks](https://github.com/MoOyeg/testFlask#health-checks)<br/>
@@ -14,12 +15,15 @@
 
 ### Module 2: [testFlask-Jenkins](https://github.com/MoOyeg/testFlask-Jenkins) - Create Same Application with a Jenkins Pipeline in Openshift
 
-### Module 3: [testFlask-Tekton](https://github.com/MoOyeg/testFlask-tekton) - Create Same Application with a Tekton Pipleine in Openshift
+### Module 3: [testFlask-Tekton](https://github.com/MoOyeg/testFlask-tekton) - Create Same Application with a Tekton Pipeline in Openshift
 
 ### Module 4: [testFlask-Oauth](https://github.com/MoOyeg/testFlask-Oauth-Proxy) - Application authentication using Openshift Oauth Proxy<br/>
 
 ### Module 5: [testflask-gitops](https://github.com/MoOyeg/testflask-gitops) - ArgoCD Application Continous Deployment<br/>
+
+### Module 6: [testflask-helm-repo](https://github.com/MoOyeg/testflask-helm-repo) - Deploy the Same Application via Helm<br/>
 <br/>
+
 
 ### Steps to Run<br/>
 
