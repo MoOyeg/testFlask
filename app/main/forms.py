@@ -1,4 +1,5 @@
-from flask import request
+import quart.flask_patch
+from quart import request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField
 from wtforms import StringField, PasswordField, BooleanField, SubmitField

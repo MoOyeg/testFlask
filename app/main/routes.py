@@ -1,7 +1,8 @@
 from datetime import datetime
-from flask import render_template, flash, redirect, url_for, request, g, \
+import quart.flask_patch
+from quart import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, make_response
-from flask_login import current_user, login_required
+#from flask_login import current_user, login_required
 from app import db
 from app.main import bp
 from app.main.forms import PostForm
@@ -81,18 +82,18 @@ def refresh_db(url):
 
 
 @bp.route('/base', methods=['GET', 'POST'])
-def base():
-    return render_template('base2.html')
+async def base():
+    return await render_template('base2.html')
 
 
 @bp.route('/configuration', methods=['GET'])
-def configuration():
+async def configuration():
     configs = myclassvariables()
-    return render_template('configuration.html', configs=configs)
+    return await render_template('configuration.html', configs=configs)
 
 
 @bp.route('/database', methods=['GET', 'POST'])
-def database():
+async def database():
     configs = myclassvariables()
     form = PostForm()
     db_value = {}
@@ -126,23 +127,23 @@ def database():
             print("key - {}: Already in DB".format(key), file=sys.stderr)
             #flash('Value already exists for key {}'.format(key))
             temp_db = refresh_db(fullurl)
-            return render_template('database.html', form=form, configs=configs,
+            return await render_template('database.html', form=form, configs=configs,
                                    db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2])
 
         temp_db = refresh_db(fullurl)
-        return render_template('database.html', form=form, configs=configs,
+        return await render_template('database.html', form=form, configs=configs,
                                db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2])
 
     temp_db = refresh_db(fullurl)
-    return render_template('database.html', form=form, configs=configs,
+    return await render_template('database.html', form=form, configs=configs,
                            db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2])
 
-    return render_template('database.html', configs=configs)
+    return await render_template('database.html', configs=configs)
 
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
-def index():
+async def index():
     form = PostForm()
     fullurl = ""
 
@@ -156,7 +157,7 @@ def index():
         healthdown_url = "{}{}".format(healthdown_url, "health_down")
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
-    return render_template('index.html')
+    return await render_template('index.html')
     # global counter_db_inserted
 
     # if not Config.DB_INIT:
@@ -182,23 +183,23 @@ def index():
     #         print("key - {}: Already in DB".format(key), file=sys.stderr)
     #         #flash('Value already exists for key {}'.format(key))
     #         temp_db = refresh_db(fullurl)
-    #         return render_template('index.html', form=form, configs=configs,
+    #         return await render_template('index.html', form=form, configs=configs,
     #                                db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2],
     #                                health_url=healthdown_url, ready_url=readydown_url, ready=str(check_ready()), health=str(check_health()))
 
     #     temp_db = refresh_db(fullurl)
-    #     return render_template('index.html', form=form, configs=configs,
+    #     return await render_template('index.html', form=form, configs=configs,
     #                            db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2],
     #                            health_url=healthdown_url, ready_url=readydown_url, ready=str(check_ready()), health=str(check_health()))
 
     # temp_db = refresh_db(fullurl)
-    # return render_template('index.html', form=form, configs=configs,
+    # return await render_template('index.html', form=form, configs=configs,
     #                        db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2],
     #                        health_url=healthdown_url, ready_url=readydown_url, ready=str(check_ready()), health=str(check_health()))
 
 
 @bp.route('/health_status', methods=['GET', 'POST'])
-def health_status():
+async def health_status():
     form = PostForm()
     fullurl = ""
     configs = myclassvariables()
@@ -212,12 +213,12 @@ def health_status():
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
 
-    return render_template('health_status.html', form=form, configs=configs,
+    return await render_template('health_status.html', form=form, configs=configs,
                            health_url=healthdown_url, ready_url=readydown_url, ready=check_ready(), health=check_health())
 
 
 @bp.route('/remove', methods=['GET', 'POST'])
-def db_remove():
+async def db_remove():
     global counter_db_removed
 
     value_remove = request.args.get("key")
@@ -228,11 +229,11 @@ def db_remove():
             db.session.delete(tempkey)
             db.session.commit()
             counter_db_removed += 1
-    return redirect('/database')
+    return await redirect('/database')
 
 
 @bp.route('/metrics', methods=['GET'])
-def metrics():
+async def metrics():
     count = 0
     global counter_db_available
     global counter_db_inserted
@@ -245,54 +246,54 @@ def metrics():
         for val in stored_values:
             count += 1
         counter_db_available = count
-        # return make_response(jsonify({"Available Keys":"{}".format(counter_db_available)},
+        # return await make_response(jsonify({"Available Keys":"{}".format(counter_db_available)},
         # {"Total Insert Statements":"{}".format(counter_db_inserted)},
         # {"Total Remove Statements":"{}".format(counter_db_removed)}))
         response = make_response("Available_Keys {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}".format(counter_db_available,
                                                                                                                     counter_db_inserted, counter_db_removed), 200)
         response.content_type = "text/plain"
-        return response
+        return await response
     else:
         response = make_response("Available_Keys {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}".format(counter_db_available,
                                                                                                                     counter_db_inserted, counter_db_removed), 200)
         response.content_type = "text/plain"
-        return response
-        # return make_response(jsonify({"Available Keys":""},
+        return await response
+        # return await make_response(jsonify({"Available Keys":""},
         # {"Total Insert Statements":""},
         # {"Total Remove Statements":""}))
 
 
 @bp.route('/health', methods=['GET'])
-def health():
+async def health():
     # Provide Application Health Status to the Outside World
     if check_health():
-        return make_response(jsonify({'Status': 'OK'}), 200)
+        return await make_response(jsonify({'Status': 'OK'}), 200)
     else:
-        return make_response(jsonify({'Status': 'Unavailable'}), 503)
+        return await make_response(jsonify({'Status': 'Unavailable'}), 503)
 
 
 @bp.route('/ready', methods=['GET'])
-def ready():
+async def ready():
     # Provide Application Ready Status to the Outside World
     if check_ready():
-        return make_response(jsonify({'Status': 'Ready'}), 200)
+        return await make_response(jsonify({'Status': 'Ready'}), 200)
     else:
-        return make_response(jsonify({'Status': 'Unavailable'}), 503)
+        return await make_response(jsonify({'Status': 'Unavailable'}), 503)
 
 
 @bp.route('/health_down', methods=['GET', 'POST'])
-def health_down():
+async def health_down():
     global health_status_ok
     value = request.args.get("status")
     if value == "down":
         health_status_ok = False
     else:
         health_status_ok = True
-    return redirect('/health_status')
+    return await redirect('/health_status')
 
 
 @bp.route('/ready_down', methods=['GET'])
-def ready_down():
+async def ready_down():
     global ready_status_ok
     value = request.args.get("status")
     if value == "down":
@@ -300,11 +301,11 @@ def ready_down():
     else:
         ready_status_ok = True
 
-    return redirect('/health_status')
+    return await redirect('/health_status')
 
 
 @bp.route('/insert', methods=['POST'])
-def insert():
+async def insert():
 
     global counter_db_inserted
 
@@ -327,9 +328,9 @@ def insert():
             db.session.add(temp)
             db.session.commit()
             counter_db_inserted += 1
-            return make_response(jsonify({'Status': 'OK'}), 200)
+            return await make_response(jsonify({'Status': 'OK'}), 200)
         else:
             print("key - {}: Already in DB".format(temp_key), file=sys.stderr)
-            return make_response(jsonify({'Status': 'Duplicate Key Could Not Be Added'}), 503)
+            return await make_response(jsonify({'Status': 'Duplicate Key Could Not Be Added'}), 503)
     except:
-        return make_response(jsonify({'Status': 'Server Could Not Process'}), 503)
+        return await make_response(jsonify({'Status': 'Server Could Not Process'}), 503)

@@ -5,6 +5,7 @@ cffi==1.14.0
 click==7.1.2
 cryptography==3.3.2
 dominate==2.5.1
+Quart==0.6.15
 Flask==1.1.2
 Flask-Babel==1.0.0
 Flask-Bootstrap==3.3.7.1
