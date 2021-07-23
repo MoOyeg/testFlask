@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from uvicorn.workers import UvicornWorker
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -25,6 +26,9 @@ class Config(object):
     #Generate URI from Parameters
     SQLALCHEMY_DATABASE_URI = create_uri(SQLALCHEMY_DATABASE_USERNAME,SQLALCHEMY_DATABASE_PASSWORD,SQLALCHEMY_DATABASE_HOST,
     SQLALCHEMY_DATABASE_DB)    
+
+class MyUvicornWorker(UvicornWorker):
+    CONFIG_KWARGS = {"loop": "asyncio", "http": "h11", "lifespan": "off"}
 
 def myclassvariables():
     temp = {}
