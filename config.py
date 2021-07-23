@@ -28,7 +28,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_DB)    
 
 class MyUvicornWorker(UvicornWorker):
-    CONFIG_KWARGS = {"loop": "asyncio", "http": "h11", "lifespan": "off","timeout-keep-alive":0}
+    CONFIG_KWARGS = {"loop": "asyncio", "http": "h11", "lifespan": "off","timeout_keep_alive":0}
 
 def myclassvariables():
     temp = {}
