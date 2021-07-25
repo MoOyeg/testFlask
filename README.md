@@ -13,15 +13,18 @@
   6. [User Workload Monitoring](https://github.com/MoOyeg/testFlask#monitoring-and-autoscaling-application-metrics)<br/>
   7. [Serverless Example](https://github.com/MoOyeg/testFlask#openshift-serverless)<br/>
 
-### Module 2: [testFlask-Jenkins](https://github.com/MoOyeg/testFlask-Jenkins) - Create Same Application with a Jenkins Pipeline in Openshift
+### Module 2: [Custom s2i Images](https://github.com/MoOyeg/s2i-python-custom.git) - Create Custom s2i Images for Python Applications <br/>
 
-### Module 3: [testFlask-Tekton](https://github.com/MoOyeg/testFlask-tekton) - Create Same Application with a Tekton Pipeline in Openshift
+### Module 3: [testFlask-Jenkins](https://github.com/MoOyeg/testFlask-Jenkins) - Create Same Application with a Jenkins Pipeline in Openshift<br/>
 
-### Module 4: [testFlask-Oauth](https://github.com/MoOyeg/testFlask-Oauth-Proxy) - Application authentication using Openshift Oauth Proxy<br/>
+### Module 4: [testFlask-Tekton](https://github.com/MoOyeg/testFlask-tekton) - Create Same Application with a Tekton Pipeline in Openshift<br/>
 
-### Module 5: [testflask-gitops](https://github.com/MoOyeg/testflask-gitops) - ArgoCD Application Continous Deployment<br/>
+### Module 5: [testFlask-Oauth](https://github.com/MoOyeg/testFlask-Oauth-Proxy) - Application authentication using Openshift Oauth Proxy<br/>
 
-### Module 6: [testflask-helm-repo](https://github.com/MoOyeg/testflask-helm-repo) - Deploy the Same Application via Helm<br/>
+### Module 6: [testflask-gitops](https://github.com/MoOyeg/testflask-gitops) - ArgoCD Application Continous Deployment<br/>
+
+### Module 7: [testflask-helm-repo](https://github.com/MoOyeg/testflask-helm-repo) - Deploy the Same Application via Helm<br/>
+
 <br/>
 
 
