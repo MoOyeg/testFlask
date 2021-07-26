@@ -12,6 +12,7 @@
   5. [Vertical Autoscaling](https://github.com/MoOyeg/testFlask#vertical-pod-autoscaler)<br/>
   6. [User Workload Monitoring](https://github.com/MoOyeg/testFlask#monitoring-and-autoscaling-application-metrics)<br/>
   7. [Serverless Example](https://github.com/MoOyeg/testFlask#openshift-serverless)<br/>
+  8. [Async Python Example](https://github.com/MoOyeg/testFlask#ASGI/Quart/Uvicorn)<br/>
 
 ### Module 2: [Custom s2i Images](https://github.com/MoOyeg/s2i-python-custom.git) - Create Custom s2i Images for Python Applications <br/>
 
@@ -221,3 +222,10 @@ spec:
             value: $MYSQL_DATABASE
 EOF
 ```
+## ASGI/Quart/Uvicorn
+17 **Build and Alternate version of the testflask application using ASGI and Uvicorn**
+   - Build custom builder image of uvicorn(Sample provided)<br/>
+     ```oc new-build https://github.com/MoOyeg/s2i-python-custom.git --name=s2i-ubi8-uvicorn --context-dir=s2i-ubi8-uvicorn -n $NAMESPACE_DEV```
+    
+   - Build Application Image using previous image with custom gunicorn worker
+     ```oc new-app s2i-ubi8-uvicorn~https://github.com/MoOyeg/testFlask.git#quart --name=testquart -l app=testquart --strategy=source --env=APP_CONFIG=gunicorn-uvi.conf --env=APP_MODULE=testapp:app --env CUSTOM_WORKER="true" -n $NAMESPACE_DEV```
