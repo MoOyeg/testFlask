@@ -64,7 +64,7 @@
 - Public Repo using the Dockerfile to build(Docker Strategy)  ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```
 
 ***Patch Environment Details with information from DownWardAPI***  
-```oc patch deploy/$APP_NAME --type merge --patch '{"spec": {"template": {"spec": {"containers":{"env":[{"name":"NODE_NAME","valueFrom":{fieldRef:{"apiVersion":"v1","fieldPath":"spec.nodeName"}}}]}}}}}'```
+```oc patch deploy/$APP_NAME --patch "$(curl https://raw.githubusercontent.com/MoOyeg/testFlask/temp/patch-env.json | envsubst)" -n $NAMESPACE_DEV```
 
 7 **Expose the service to the outside world with an openshift route**  
 ```oc expose svc/$APP_NAME -n $NAMESPACE_DEV```
