@@ -50,31 +50,34 @@
 ```oc create secret generic my-secret --from-literal=MYSQL_USER=$MYSQL_USER --from-literal=MYSQL_PASSWORD=$MYSQL_PASSWORD -n $NAMESPACE_DEV```
 
 4 **Create a new mysql instance(Application will use sqlite if no mysql detail is provided)**  
-```oc new-app $MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -l db=mysql -l app=testflask -n $NAMESPACE_DEV --as-deployment-config=true```
+```oc new-app $MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -l db=mysql -l app=testflask -n $NAMESPACE_DEV```
 
 5 **The new app above will fail because we have not provided the MYSQL user and password,we can provide the database secret to the mysql deployment**  
-```oc set env dc/$MYSQL_HOST --from=secret/my-secret -n $NAMESPACE_DEV```
+```oc set env deploy/$MYSQL_HOST --from=secret/my-secret -n $NAMESPACE_DEV```
 
 6 **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html),  **Example below uses source-secret created earlier,if you want to use sqlite in the same pod instead of the mysql we created above skip all the database environment variables**  
 
 - Private Repo with Source Secret  
-```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret$REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE --as-deployment-config=true -n $NAMESPACE_DEV```  
+```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret$REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
 - Public Repo without Source Secret(s2i Building)  
-```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE --as-deployment-config=true -n $NAMESPACE_DEV```  
-- Public Repo using the Dockerfile to build(Docker Strategy)  ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE --as-deployment-config=true -n $NAMESPACE_DEV```  
+```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
+- Public Repo using the Dockerfile to build(Docker Strategy)  ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```
+
+***Patch Environment Details with information from DownWardAPI***  
+```oc patch deploy/$APP_NAME --patch "$(curl https://raw.githubusercontent.com/MoOyeg/testFlask/master/patch-env.json | envsubst)" -n $NAMESPACE_DEV```
 
 7 **Expose the service to the outside world with an openshift route**  
 ```oc expose svc/$APP_NAME -n $NAMESPACE_DEV```
 
 8 **We can provide your database secret to your app deployment, so your app can use those details**  
-```oc set env dc/$APP_NAME --from=secret/my-secret -n $NAMESPACE_DEV```
+```oc set env deploy/$APP_NAME --from=secret/my-secret -n $NAMESPACE_DEV```
 
 9 **You should be able to log into the openshift console now to get a better look at the application, all the commands above can be run in the console, to get more info about the developer console please visit [Openshift Developer Console](https://docs.openshift.com/container-platform/4.4/applications/application_life_cycle_management/odc-creating-applications-using-developer-perspective.html)**
 
 10 **To make the seperate deployments appear as one app in the Developer Console, you can label them. This step does not change app behaviour or performance is a visual aid and would not be required if app was created from developer console**  
-```oc label dc/$APP_NAME app.kubernetes.io/part-of=$APP_NAME -n $NAMESPACE_DEV```  
-```oc label dc/$MYSQL_HOST app.kubernetes.io/part-of=$APP_NAME -n $NAMESPACE_DEV```  
-```oc annotate dc/$APP_NAME app.openshift.io/connects-to=$MYSQL_HOST -n $NAMESPACE_DEV```  
+```oc label deploy/$APP_NAME app.kubernetes.io/part-of=$APP_NAME -n $NAMESPACE_DEV```  
+```oc label deploy/$MYSQL_HOST app.kubernetes.io/part-of=$APP_NAME -n $NAMESPACE_DEV```  
+```oc annotate deploy/$APP_NAME app.openshift.io/connects-to=$MYSQL_HOST -n $NAMESPACE_DEV```  
 
 ## Webhooks
 
@@ -90,10 +93,10 @@
 12 **It is important to be able to provide the status of your application to the platform so the platform does not send requests to application instances not ready or available to recieve them, this can be done with a liveliness and a health probe, please see [Health Checks](https://docs.openshift.com/container-platform/4.4/applications/application-health.html). This application has  sample /health and /ready uri that provide responses about the status of the application**  
 
 - **Create a readiness probe for our application**  
-```oc set probe dc/$APP_NAME --readiness --get-url=http://:8080/ready --initial-delay-seconds=10 -n $NAMESPACE_DEV```  
+```oc set probe deploy/$APP_NAME --readiness --get-url=http://:8080/ready --initial-delay-seconds=10 -n $NAMESPACE_DEV```  
 
 - **Create a liveliness probe for our application**  
-```oc set probe dc/$APP_NAME --liveness --get-url=http://:8080/health --timeout-seconds=30 --failure-threshold=3 --period-seconds=10 -n $NAMESPACE_DEV```  
+```oc set probe deploy/$APP_NAME --liveness --get-url=http://:8080/health --timeout-seconds=30 --failure-threshold=3 --period-seconds=10 -n $NAMESPACE_DEV```  
 
 - **We can test Openshift Readiness by opening the application page and setting the application ready to down, after a while the application endpoint will be removed from the list of endpoints that recieve traffic for the service,you can confirm by**  
   - ```oc get ep/$APP_NAME -n $NAMESPACE_DEV```  
@@ -113,14 +116,14 @@
 13 **Autoscale based on Pod CPU Metrics**  
 
 - Set Limits and Requests for HPA Object to use  
-    ```oc set resources dc/$APP_NAME --requests=cpu=10m,memory=80Mi --limits=cpu=20m,memory=120Mi -n $NAMESPACE_DEV```
+    ```oc set resources deploy/$APP_NAME --requests=cpu=10m,memory=80Mi --limits=cpu=20m,memory=120Mi -n $NAMESPACE_DEV```
 
 - Confirm PodMetrics are available for pod before continuing  
      ```POD_NAME=$(oc get pods -l deploymentconfig=$APP_NAME -n $NAMESPACE_DEV -o name | head -n 1)```  
      ```oc describe PodMetrics $POD_NAME -n $NAMESPACE_DEV```  
   
 - Create Horizontal Pod Autoscaler with 50% Average CPU  
-      ```oc autoscale dc/$APP_NAME --max=3 --cpu-percent=50 -n $NAMESPACE_DEV```  
+      ```oc autoscale deploy/$APP_NAME --max=3 --cpu-percent=50 -n $NAMESPACE_DEV```  
 
 - Send Traffic to Pod to Increase CPU usage and force scaling.  
      ```ROUTE_URL=$(oc get route $APP_NAME -n $NAMESPACE_DEV -o jsonpath='{ .spec.host }')```  
