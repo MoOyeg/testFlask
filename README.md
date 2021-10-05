@@ -15,7 +15,7 @@
   5. [Vertical Autoscaling](https://github.com/MoOyeg/testFlask#vertical-pod-autoscaler)  
   6. [User Workload Monitoring](https://github.com/MoOyeg/testFlask#monitoring-and-autoscaling-application-metrics)  
   7. [Serverless Example](https://github.com/MoOyeg/testFlask#openshift-serverless)  
-  8. [Async Python Example](https://github.com/MoOyeg/testFlask#ASGI/Quart/Uvicorn)  
+  8. [Async Python Example](https://github.com/MoOyeg/testFlask/tree/quart)  
 
 ### Module 2: [Custom s2i Images](https://github.com/MoOyeg/s2i-python-custom.git) - Create Custom s2i Images for Python Applications  
 
