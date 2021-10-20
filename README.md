@@ -1,6 +1,6 @@
 # testFlask
 
-## Test Flask is a simple flask application to show some parts of the Openshfit Application Experience for a Python Application.  It's been broken down into a series of modules that cover likely Use Cases  
+## Test Flask is a simple flask application to show some parts of the Openshift Application Experience for a Python Application.  It's been broken down into a series of modules that cover likely Use Cases  
 
 ----------
 
@@ -162,7 +162,7 @@
 
 15 **Openshift also provides a way for you to use Openshift's platform monitoring to monitor your application metrics and provide alerts on those metrics.Note, this functionality is still in Tech Preview.This only works for applications that expose a /metrics endpoint that can be scraped which this application does. Please visit [Monitoring Your Applications](https://docs.openshift.com/container-platform/4.4/monitoring/monitoring-your-own-services.html) and you can see an example of how to do that [here](https://servicesblog.redhat.com/2020/04/08/application-monitoring-openshift/), before running any of the below steps please enable monitoring using info from the links above**  
 
-- **Create a servicemonitor using below code <ins>(Please enable cluster monitoring with info from above first)</ins>, servicemonitor label must match label specified from the deployment config above.**  
+- **Create a servicemonitor using below code (Please enable cluster monitoring with info from above first), servicemonitor label must match label specified from the deployment config above.**  
 
 ```bash
 cat << EOF | oc create -f -
