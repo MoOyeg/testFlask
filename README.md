@@ -191,7 +191,7 @@ EOF
   
 - **After the servicemonitor is created we can confirm by looking up the application metrics under monitoring-->metrics, one of the metrics exposed is Available_Keys(Type Available_Keys in query and run) so as more keys are added on the application webpage we should see this metric increase**
 
-- **We can also create alerts based on Application Metrics using the Openshift's Platform AlertManager via Prometheus,[Openshift Alerting](https://docs.openshift.com/container-platform/4.4/monitoring/cluster_monitoring/managing-cluster-alerts.html).We need to create an Alerting Rule to recieve Alerts**
+- **We can also create alerts based on Application Metrics using the Openshift's Platform AlertManager via Prometheus,[Openshift Alerting](https://docs.openshift.com/container-platform/4.8/monitoring/managing-alerts.html).We need to create an Alerting Rule to recieve Alerts**
 
 ```bash
 cat << EOF | oc create -f -
@@ -209,7 +209,7 @@ spec:
 EOF
 ```
 
-- **The above alert should only fire when the we have more than 4 keys in the application, go to the application webpage and add more than 4 keys to the DB, we should be able to get an alert when we go to Monitoring-Alerts-AlertManager UI(Top of Page)**
+- **The above alert should only fire when we have more than 4 keys in the application, go to the application webpage and add more than 4 keys to the DB, we should get an alert when we go to Monitoring-Alerts-AlertManager UI(Top of Page)**
 
 ## Openshift Serverless
 
