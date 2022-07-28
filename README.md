@@ -154,7 +154,7 @@
         spec:
           targetRef:
             apiVersion: "apps.openshift.io/v1"
-            kind:       DeploymentConfig
+            kind:       Deployment
             name:       $APP_NAME
           updatePolicy:
             updateMode: "Auto" """ | oc create -f - -n $NAMESPACE_DEV
