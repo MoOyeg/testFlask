@@ -88,9 +88,9 @@
 
 11 **You can attach a WebHook to your application , so when there is application code change the application is rebuilt to take adavantage of that, you can see steps to this via the developer console .Opensshift will create the html link and secret for you which you can configure in github/gitlab other generic VCS. See more here [Openshift Triggers](https://docs.openshift.com/container-platform/4.4/builds/triggering-builds-build-hooks.html) and see [github webhooks](https://developer.github.com/webhooks/)**  
     -  To get the Webhook Link from the CLI  
-       ```oc describe bc/$APP_NAME | grep -i -A1 "webhook generic"```  
+       ```oc describe bc/$APP_NAME -n $NAMESPACE_DEV | grep -i -A1 "webhook generic"```  
     -  To get the Webhook Secret from the CLI  
-       ```oc get bc/$APP_NAME  -o jsonpath='{.spec.triggers[*].github.secret}'```  
+       ```oc get bc/$APP_NAME -n $NAMESPACE_DEV -o jsonpath='{.spec.triggers[*].github.secret}'```  
     - Content Type is application/json and disable ssl verification if your ingress does not have a trusted cert.  
 
 ## Health Checks
