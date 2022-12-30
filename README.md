@@ -249,6 +249,3 @@ EOF
 
 - Build Application Image using previous image with custom gunicorn worker  
      ```oc new-app s2i-ubi8-uvicorn~https://github.com/MoOyeg/testFlask.git#quart --name=testquart -l app=testquart --strategy=source --env=APP_CONFIG=gunicorn-uvi.conf --env=APP_MODULE=testapp:app --env CUSTOM_WORKER="true" -n $NAMESPACE_DEV```
-
-
-test
