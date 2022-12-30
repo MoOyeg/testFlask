@@ -1,3 +1,12 @@
+
+"""BluePrint/Flask Init file for Application"""
+
+#Pylint
+# pylint: disable=import-outside-toplevel
+# pylint: disable=import-error
+# pylint: disable=ungrouped-imports
+# pylint: disable=wrong-import-order
+
 import os
 from flask import Flask, request, current_app
 from flask_sqlalchemy import SQLAlchemy
@@ -11,12 +20,14 @@ from config import Config
 from flask.logging import default_handler
 
 
+
 db = SQLAlchemy()
 migrate = Migrate()
 bootstrap = Bootstrap()
 
 
 def create_app(config_class=Config):
+    """Method that intializes whole app for flask"""
     app = Flask(__name__)
     app.config['DEBUG'] = True
     app.config.from_object(config_class)

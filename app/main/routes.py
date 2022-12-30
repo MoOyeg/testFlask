@@ -1,3 +1,13 @@
+'''
+Module contains flask routing logic for application
+'''
+# Pylint Configurations
+# pylint: disable=import-error
+# pylint: disable=unused-import
+# pylint: disable=wrong-import-order
+# pylint: disable=bare-except
+# pylint: disable=global-statement
+
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app, make_response
@@ -10,140 +20,189 @@ from config import Config
 import sys
 from config import myclassvariables
 
-health_status_ok = True
-ready_status_ok = True
-counter_db_inserted = 0
-counter_db_removed = 0
-counter_db_available = 0
+#Initalize Variables
+#Used as flag to store application health
+HEALTH_STATUS_OK = True
+#Used as flag to store application readiness
+READY_STATUS_OK = True
+#Used as flag to count amout of times Keystore has had an insert
+COUNTER_DB_INSERTED = 0
+#Used as flag to count amout of times Keystore has had a remove
+COUNTER_DB_REMOVED = 0
+#Duplicate Key in DB Error Message
+DUPLICATE_KEY_DB_MESSAGE = "Duplicate Key Error"
 
 
 def check_health():
-    # Nothing Fancy will Store Application Health in Variable for now
-    if health_status_ok:
+    """ Simulates Application Health Status for Kubernetes Probes
+        Will Store Application Health in Variable HEALTH_STATUS_OK for now """
+    if HEALTH_STATUS_OK:
         print("Checking if Application is Healthy: Application is Healthy",
               file=sys.stderr)
-        return True
     else:
-        print(
-            "Checking if Application is Healthy: Application is Unhealthy", file=sys.stderr)
-        return False
-
+        print("Checking if Application is Healthy: Application is Unhealthy", file=sys.stderr)
+    return HEALTH_STATUS_OK
 
 def check_ready():
-    # To Check Readiness we will attempt to add and remove from the db
-    insertime = datetime.utcnow()
-    if ready_status_ok:
+    """ Simulates Application Readiness for Kubernetes Probes
+        Will Store Application Health in Variable READY_STATUS_OK for now """
+    # insertime = datetime.utcnow()
+    if READY_STATUS_OK:
         print("Checking if Application is Ready: Application is Ready", file=sys.stderr)
-        return True
     else:
         print("Checking if Application is Ready: Application is not Ready",
               file=sys.stderr)
-        return False
+    return READY_STATUS_OK
 
-    try:
-        temp = KeyStore(timestamp=insertime, key="test123", value="test123")
-        db.session.add(temp)
-        db.session.commit()
-    except:
-        print("Application Not Ready we could not insert into Database",
-              file=sys.stderr)
-        return False
+def keystore_read(keystore):
+    '''Meant to Read a Keystore Object and return it's contents'''
+    check_db_init()
+    return keystore.query.all()
 
-    try:
-        tempkey = KeyStore.query.filter_by(key="test123").first()
-        db.session.delete(tempkey)
-        db.session.commit()
-    except:
-        print("Application Not Ready we could not remove from Database",
-              file=sys.stderr)
-        return False
-
-    return True
-
+def keystore_count(keystore):
+    '''Meant to Read a Keystore Object and return a count of it's objects'''
+    check_db_init()
+    return len(keystore.query.all())
 
 def refresh_db(url):
-    form = PostForm()
+    """ Refresh Database View
+    """
+    # form = PostForm()
+    check_db_init()
     stored_values = {}
-    db_value = {}
-    db_time = {}
-    db_remove = {}
-    count = 0
+    refresh_db_value = {}
+    refresh_db_time = {}
+    refresh_db_remove = {}
+    refresh_db_count = 0
 
     url = url.replace("/database", "")
-    stored_values = KeyStore.query.all()
+    stored_values = keystore_read(KeyStore)
+    # count_values = keystore_count(KeyStore)
     for val in stored_values:
-        db_time.update({val.key: val.timestamp})
-        db_value.update({val.key: val.value})
-        db_remove.update({val.key: "{}{}?key={}".format(
+        refresh_db_time.update({val.key: val.timestamp})
+        refresh_db_value.update({val.key: val.value})
+        refresh_db_remove.update({val.key: "{}{}?key={}".format(
             url, url_for('main.db_remove'), val.key)})
-        count += 1
-    return [db_value, db_time, db_remove, count]
-
+        refresh_db_count  += 1
+    return [refresh_db_value, refresh_db_time, refresh_db_remove, refresh_db_count ]
 
 @bp.route('/base', methods=['GET', 'POST'])
 def base():
+    """ Render Base HTML WebPage"""
     return render_template('base2.html')
 
 
 @bp.route('/configuration', methods=['GET'])
 def configuration():
+    """ Render Configuration WebPage"""
     configs = myclassvariables()
     return render_template('configuration.html', configs=configs)
 
-
-@bp.route('/database', methods=['GET', 'POST'])
-def database():
-    configs = myclassvariables()
-    form = PostForm()
-    db_value = {}
-    db_time = {}
-    db_remove = {}
-    configs = myclassvariables()
-    fullurl = request.base_url
-
-    global counter_db_inserted
-
+def check_db_init():
+    '''Make Sure DB is Initialized with Our Table before we start'''
+    #Variable stores global INIT Flag for database
     if not Config.DB_INIT:
         try:
             db.create_all()
+            Config.DB_INIT = True
         except:
             pass
-        Config.DB_INIT = True
+
+def database_insert(**kwargs):
+    """ Method to handle insertion into DB
+    """
+    global COUNTER_DB_INSERTED
+    check_db_init()
+
+    try:
+        keystore = kwargs["keystore"]
+    except:
+        print("Could not obtain keystore object from input parameter",file=sys.stderr)
+        return {"status":"error","error":"Could not obtain keystore object from input parameter"}
+
+    try:
+        insertime = kwargs["insertime"]
+    except:
+        print("Could not obtain insertime from input parameter",file=sys.stderr)
+        return {"status":"error","error":"Could not obtain insertime from input parameter"}
+
+    try:
+        key = kwargs["key"]
+    except:
+        print("Could not obtain key from input parameter",file=sys.stderr)
+        return {"status":"error","error":"Could not obtain key from input parameter"}
+
+    try:
+        value = kwargs["value"]
+    except:
+        print("Could not obtain value from input parameter",file=sys.stderr)
+        return {"status":"error","error":"Could not obtain value from input parameter"}
+
+    # Check if Key Already Exists
+    if keystore.query.filter_by(key=key).first() is None:
+        temp = keystore(timestamp=insertime,key=key, value=value)
+        db.session.add(temp)
+        db.session.commit()
+        COUNTER_DB_INSERTED += 1
+    else:
+        print("key:{0} -- {1}".format(key,DUPLICATE_KEY_DB_MESSAGE),file=sys.stderr)
+        return {"status":"error","error":"{0}".format(DUPLICATE_KEY_DB_MESSAGE)}
+
+    return {"status":"OK","error":"","key": key}
+
+@bp.route('/database', methods=['GET', 'POST'])
+def database():
+    '''
+    Function Handles Insert into with DB from Form/WebPage
+    '''
+    configs = myclassvariables()
+    form = PostForm()
+    fullurl = request.base_url
+    check_db_init()
 
     if form.validate_on_submit():
-        key = request.form["key"]
-        value = request.form["value"]
+        input_key = request.form["key"]
+        input_value = request.form["value"]
         insertime = datetime.utcnow()
 
-        # Check if Key Already Exists
-        if KeyStore.query.filter_by(key=key).first() is None:
-            temp = KeyStore(timestamp=insertime,
-                            key=request.form["key"], value=request.form["value"])
-            db.session.add(temp)
-            db.session.commit()
-            counter_db_inserted += 1
-        else:
-            print("key - {}: Already in DB".format(key), file=sys.stderr)
-            #flash('Value already exists for key {}'.format(key))
+        output = database_insert(keystore=KeyStore,insertime=insertime,
+                                 key=input_key,value=input_value)
+
+        if output["status"] == "error":
+            if output["error"] == DUPLICATE_KEY_DB_MESSAGE:
+                flash(DUPLICATE_KEY_DB_MESSAGE,'error')
             temp_db = refresh_db(fullurl)
             return render_template('database.html', form=form, configs=configs,
                                    db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2])
-
-        temp_db = refresh_db(fullurl)
-        return render_template('database.html', form=form, configs=configs,
-                               db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2])
 
     temp_db = refresh_db(fullurl)
     return render_template('database.html', form=form, configs=configs,
                            db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2])
 
-    return render_template('database.html', configs=configs)
+@bp.route('/insert', methods=['POST'])
+def insert():
+    '''Insert into DB via API'''
+    check_db_init()
 
+    try:
+        input_key = str(request.args.get("key"))
+        input_value = str(request.args.get("value"))
+        insertime = datetime.utcnow()
+    except:
+        return make_response(jsonify({'Status': 'Server could not process Input Values'}), 503)
+
+    output = database_insert(keystore=KeyStore,insertime=insertime,
+                                 key=input_key,value=input_value)
+
+    if output["status"] == "error":
+        return make_response(jsonify({'Status': "{}".format(output["error"])}), 503)
+    return make_response(jsonify({'Status': 'OK'}), 200)
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
 def index():
-    form = PostForm()
+    '''Starting Index Page'''
+    PostForm()
     fullurl = ""
 
     configs = myclassvariables()
@@ -157,48 +216,10 @@ def index():
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
     return render_template('index.html')
-    # global counter_db_inserted
-
-    # if not Config.DB_INIT:
-    #     try:
-    #         db.create_all()
-    #     except:
-    #         pass
-    #     Config.DB_INIT = True
-
-    # if form.validate_on_submit():
-    #     key = request.form["key"]
-    #     value = request.form["value"]
-    #     insertime = datetime.utcnow()
-
-    #     # Check if Key Already Exists
-    #     if KeyStore.query.filter_by(key=key).first() is None:
-    #         temp = KeyStore(timestamp=insertime,
-    #                         key=request.form["key"], value=request.form["value"])
-    #         db.session.add(temp)
-    #         db.session.commit()
-    #         counter_db_inserted += 1
-    #     else:
-    #         print("key - {}: Already in DB".format(key), file=sys.stderr)
-    #         #flash('Value already exists for key {}'.format(key))
-    #         temp_db = refresh_db(fullurl)
-    #         return render_template('index.html', form=form, configs=configs,
-    #                                db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2],
-    #                                health_url=healthdown_url, ready_url=readydown_url, ready=str(check_ready()), health=str(check_health()))
-
-    #     temp_db = refresh_db(fullurl)
-    #     return render_template('index.html', form=form, configs=configs,
-    #                            db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2],
-    #                            health_url=healthdown_url, ready_url=readydown_url, ready=str(check_ready()), health=str(check_health()))
-
-    # temp_db = refresh_db(fullurl)
-    # return render_template('index.html', form=form, configs=configs,
-    #                        db_value=temp_db[0], db_time=temp_db[1], db_remove=temp_db[2],
-    #                        health_url=healthdown_url, ready_url=readydown_url, ready=str(check_ready()), health=str(check_health()))
-
 
 @bp.route('/health_status', methods=['GET', 'POST'])
 def health_status():
+    '''Web Page for Health Route'''
     form = PostForm()
     fullurl = ""
     configs = myclassvariables()
@@ -218,7 +239,8 @@ def health_status():
 
 @bp.route('/remove', methods=['GET', 'POST'])
 def db_remove():
-    global counter_db_removed
+    '''Method to remove key from DB'''
+    global COUNTER_DB_REMOVED
 
     value_remove = request.args.get("key")
     if value_remove is not None:
@@ -227,109 +249,60 @@ def db_remove():
         if tempkey is not None:
             db.session.delete(tempkey)
             db.session.commit()
-            counter_db_removed += 1
+            COUNTER_DB_REMOVED += 1
     return redirect('/database')
 
 
 @bp.route('/metrics', methods=['GET'])
 def metrics():
-    count = 0
-    global counter_db_available
-    global counter_db_inserted
-    global counter_db_removed
+    '''Provides internal Application metrics to outside world'''
+    global COUNTER_DB_INSERTED
+    global COUNTER_DB_REMOVED
 
-    print("Metrics Been Scraped", file=sys.stderr)
+    print("Metrics Are Being Scraped", file=sys.stdout)
     # Provide Some Metrics to External Platforms
-    if Config.DB_INIT:
-        stored_values = KeyStore.query.all()
-        for val in stored_values:
-            count += 1
-        counter_db_available = count
-        # return make_response(jsonify({"Available Keys":"{}".format(counter_db_available)},
-        # {"Total Insert Statements":"{}".format(counter_db_inserted)},
-        # {"Total Remove Statements":"{}".format(counter_db_removed)}))
-        response = make_response("Available_Keys {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}".format(counter_db_available,
-                                                                                                                    counter_db_inserted, counter_db_removed), 200)
-        response.content_type = "text/plain"
-        return response
-    else:
-        response = make_response("Available_Keys {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}".format(counter_db_available,
-                                                                                                                    counter_db_inserted, counter_db_removed), 200)
-        response.content_type = "text/plain"
-        return response
-        # return make_response(jsonify({"Available Keys":""},
-        # {"Total Insert Statements":""},
-        # {"Total Remove Statements":""}))
-
+    db_count = keystore_count(KeyStore)
+    response = make_response(
+        """Available_Keys {},Total_Insert_Statements {},Total_Remove_Statements {}""".format(
+            db_count,COUNTER_DB_INSERTED, COUNTER_DB_REMOVED), 200)
+    response.content_type = "text/plain"
+    return response
 
 @bp.route('/health', methods=['GET'])
 def health():
-    # Provide Application Health Status to the Outside World
+    '''Provide Application Health Status to the Outside World'''
     if check_health():
         return make_response(jsonify({'Status': 'OK'}), 200)
-    else:
-        return make_response(jsonify({'Status': 'Unavailable'}), 503)
+    return make_response(jsonify({'Status': 'Unavailable'}), 503)
 
 
 @bp.route('/ready', methods=['GET'])
 def ready():
-    # Provide Application Ready Status to the Outside World
+    '''Provide Application Ready Status to the Outside World'''
     if check_ready():
         return make_response(jsonify({'Status': 'Ready'}), 200)
-    else:
-        return make_response(jsonify({'Status': 'Unavailable'}), 503)
+    return make_response(jsonify({'Status': 'Unavailable'}), 503)
 
 
 @bp.route('/health_down', methods=['GET', 'POST'])
 def health_down():
-    global health_status_ok
+    '''Set Application Health down'''
+    global HEALTH_STATUS_OK
     value = request.args.get("status")
     if value == "down":
-        health_status_ok = False
+        HEALTH_STATUS_OK = False
     else:
-        health_status_ok = True
+        HEALTH_STATUS_OK = True
     return redirect('/health_status')
 
 
 @bp.route('/ready_down', methods=['GET'])
 def ready_down():
-    global ready_status_ok
+    '''Set Application Ready down'''
+    global READY_STATUS_OK
     value = request.args.get("status")
     if value == "down":
-        ready_status_ok = False
+        READY_STATUS_OK = False
     else:
-        ready_status_ok = True
-
+        READY_STATUS_OK = True
     return redirect('/health_status')
-
-
-@bp.route('/insert', methods=['POST'])
-def insert():
-
-    global counter_db_inserted
-
-    if not Config.DB_INIT:
-        try:
-            db.create_all()
-        except:
-            pass
-        Config.DB_INIT = True
-
-    try:
-        temp_key = request.args.get("key")
-        temp_value = request.args.get("value")
-        insertime = datetime.utcnow()
-
-        # Check if Key Already Exists
-        if KeyStore.query.filter_by(key=temp_key).first() is None:
-            temp = KeyStore(timestamp=insertime,
-                            key=temp_key, value=temp_value)
-            db.session.add(temp)
-            db.session.commit()
-            counter_db_inserted += 1
-            return make_response(jsonify({'Status': 'OK'}), 200)
-        else:
-            print("key - {}: Already in DB".format(temp_key), file=sys.stderr)
-            return make_response(jsonify({'Status': 'Duplicate Key Could Not Be Added'}), 503)
-    except:
-        return make_response(jsonify({'Status': 'Server Could Not Process'}), 503)
