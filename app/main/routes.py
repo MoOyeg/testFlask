@@ -263,7 +263,9 @@ def metrics():
     # Provide Some Metrics to External Platforms
     db_count = keystore_count(KeyStore)
     response = make_response(
-        """Available_Keys {},Total_Insert_Statements {},Total_Remove_Statements {}""".format(
+        """Available_Keys {}\n
+        Total_Insert_Statements {}\n
+        Total_Remove_Statements {}""".format(
             db_count,COUNTER_DB_INSERTED, COUNTER_DB_REMOVED), 200)
     response.content_type = "text/plain"
     return response
