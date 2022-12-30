@@ -1,6 +1,6 @@
 #Tag ubi8 image to make it available in cluster -- oc tag --source=docker registry.redhat.io/ubi8/ubi:latest ubi8:latest -n openshift
-#FROM image-registry.openshift-image-registry.svc:5000/openshift/ubi8
-FROM registry.redhat.io/ubi8/ubi:latest
+FROM image-registry.openshift-image-registry.svc:5000/openshift/ubi8
+#FROM registry.redhat.io/ubi8/ubi:latest
 
 #ENV Variables
 ENV APP_MODULE testapp:app
