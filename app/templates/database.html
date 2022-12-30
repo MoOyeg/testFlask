@@ -11,7 +11,16 @@
 {{ super() }}
 <div class="container-fluid">
     <h1 class="mt-4">Key Value Database</h1>
-    <p>Instructions for how to use the Application are available at <a
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class=flashes>
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <p>Application is a quick tutorial for OpenShift/Kubernetes,docs are available at <a
             href="https://github.com/MoOyeg/testFlask">Application github link</a></p>
     <p></p>
     <p>

@@ -36,10 +36,10 @@
 `eval "$(curl https://raw.githubusercontent.com/MoOyeg/testFlask/master/sample_env)"`
 
 1 **Create Necessary Projects**  
-```oc adm new-project $NAMESPACE_DEV```  
-```oc adm new-project $NAMESPACE_PROD```  
+```oc new-project $NAMESPACE_DEV```  
+```oc new-project $NAMESPACE_PROD```  
 
-2 **Step 2 Only necessary if you are using a private repo**  
+2 **This step is Only necessary if you are using a private repo**  
 **Create Secret in Openshift for Private/Cluster, example is for github ssh key**  
 ```oc create secret generic $REPO_SECRET_NAME --type=kubernetes.io/ssh-auth --from-file=ssh-privatekey=$SSHKEY_PATH -n $NAMESPACE_DEV```
 
@@ -62,13 +62,13 @@
 
 
 - Private Repo with Source Secret  
-```oc new-app python:3.6~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret$REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
+```oc new-app python:3.8~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret$REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
 - Public Repo without Source Secret(s2i Building)  
-```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
-- Public Repo using the Dockerfile to build(Docker Strategy)  ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```
-
+```oc new-app python:3.8~https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
+- Public Repo using the Dockerfile to build(Docker Strategy)  
+```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV --strategy=docker```
   
-***Patch Environment Details with information from DownWardAPI***  
+***Patch Environment Details with information from DownWardAPI that our application uses to provide information details***  
 ```oc patch deploy/$APP_NAME --patch "$(curl https://raw.githubusercontent.com/MoOyeg/testFlask/master/patch-env.json | envsubst)" -n $NAMESPACE_DEV```
 
 7 **Expose the service to the outside world with an openshift route**  
@@ -167,7 +167,7 @@
 
 15 **Openshift also provides a way for you to use Openshift's platform monitoring to monitor your application metrics and provide alerts on those metrics.Note, this functionality is still in Tech Preview.This only works for applications that expose a /metrics endpoint that can be scraped which this application does. Please visit [Monitoring Your Applications](https://docs.openshift.com/container-platform/4.10/monitoring/enabling-monitoring-for-user-defined-projects.html) and you can see an example of how to do that [here](https://servicesblog.redhat.com/2020/04/08/application-monitoring-openshift/), before running any of the below steps please enable monitoring using info from the links above**  
 
-- **Create a servicemonitor using below code (Please enable cluster monitoring with info from above first), servicemonitor label must match label specified from the deployment config above.**  
+- **Create a servicemonitor using below code (Please enable cluster monitoring with info from above first), servicemonitor label must match label specified from the deployment above.**  
 
 ```bash
 cat << EOF | oc create -f -
@@ -250,6 +250,3 @@ EOF
 
 - Build Application Image using previous image with custom gunicorn worker  
      ```oc new-app s2i-ubi8-uvicorn~https://github.com/MoOyeg/testFlask.git#quart --name=testquart -l app=testquart --strategy=source --env=APP_CONFIG=gunicorn-uvi.conf --env=APP_MODULE=testapp:app --env CUSTOM_WORKER="true" -n $NAMESPACE_DEV```
-
-
-test

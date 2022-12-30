@@ -1,4 +1,4 @@
-'''Script is provided as entry point for Running Application'''
+'''Script is provided as extra entry point for Running Application Locally'''
 from app import create_app, db
 
 app = create_app()
