@@ -57,14 +57,13 @@
 
 6 **Create a new application on openshift, using the oc new-app command. With the oc new-app command you have multiple options to specify how you would like to build a running container**.Please see [Openshift Builds](https://docs.openshift.com/container-platform/4.3/builds/understanding-image-builds.html) and [Openshift S2i](https://docs.openshift.com/enterprise/3.2/using_images/s2i_images/python.html),  **Example below uses source-secret created earlier,if you want to use sqlite in the same pod instead of the mysql we created above skip all the database environment variables**  
 
-- If building with DockerFile tag ubi8 image to make it available in cluster  
-```oc tag --source=docker registry.redhat.io/ubi8/ubi:latest ubi8:latest -n openshift```
-
 
 - Private Repo with Source Secret  
 ```oc new-app python:3.8~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret$REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
 - Public Repo without Source Secret(s2i Building)  
 ```oc new-app python:3.8~https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
+- If building with DockerFile tag ubi8 image to make it available in cluster  
+```oc tag --source=docker registry.redhat.io/ubi8/ubi:latest ubi8:latest -n openshift```
 - Public Repo using the Dockerfile to build(Docker Strategy)  
 ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV --strategy=docker```
   
