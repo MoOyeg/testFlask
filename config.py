@@ -5,6 +5,7 @@
 # pylint: consider-using-dict-items
 
 import os
+import logging
 import requests
 from dotenv import load_dotenv  # pylint: disable=import-error
 
@@ -48,16 +49,24 @@ class Config():
     METADATA_PORT = os.environ.get("METADATA_PORT") or "8080"
     KUBERNETES_DISTRIBUTION = os.environ.get('KUBERNETES_DISTRIBUTION') or ""
     KUBERNETES_VERSION = os.environ.get('KUBERNETES_VERSION') or ""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'L8QMIC'
+    SESSION_COOKIE_HEADER = os.environ.get('SESSION_COOKIE_HEADER') or 'moJrFe'
     SQLALCHEMY_DATABASE_USERNAME = os.environ.get('MYSQL_USER') or ""
     SQLALCHEMY_DATABASE_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ""
     SQLALCHEMY_DATABASE_HOST = os.environ.get('MYSQL_HOST') or ""
     SQLALCHEMY_DATABASE_DB = os.environ.get('MYSQL_DATABASE') or ""
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    KUBERNETES_SERVICE_PORT = os.environ.get('KUBERNETES_SERVICE_PORT') or ""
+    #REMOTE_DEBUG = os.environ.get('REMOTE_DEBUG') or "True"
     DB_INIT = False
+    GUNICORN_LOGGER = logging.getLogger('gunicorn.error') or "info"
+    #Integration Parameters
+    AUTH_INTEGRATION =  False
     # Generate URI from Parameters
     SQLALCHEMY_DATABASE_URI = create_uri(SQLALCHEMY_DATABASE_USERNAME, SQLALCHEMY_DATABASE_PASSWORD, SQLALCHEMY_DATABASE_HOST,
                                          SQLALCHEMY_DATABASE_DB)
+ 
+
 
 
 def myclassvariables():

@@ -29,6 +29,8 @@
 
 ### Module 7: [testflask-helm-repo](https://github.com/MoOyeg/testflask-helm-repo) - Deploy the Same Application via Helm  
 
+### Module 8: [python-openshift-remote-debugging-vscode-example](https://github.com/MoOyeg/python-openshift-remote-debugging-vscode-example) - Remote Debugging Application
+
 ### Steps to Run  
 
 ### Source Environment Variables
@@ -59,21 +61,23 @@
 
 
 - Private Repo with Source Secret  
-```oc new-app python:3.8~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret$REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
+```oc new-app python:3.8~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret$REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=./gunicorn/gunicorn.conf.py --env=APP_MODULE=runapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
 - Public Repo without Source Secret(s2i Building)  
-```oc new-app python:3.8~https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=gunicorn.conf.py --env=APP_MODULE=testapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
-- If building with DockerFile tag ubi8 image to make it available in cluster  
-```oc tag --source=docker registry.redhat.io/ubi8/ubi:latest ubi8:latest -n openshift```
+```oc new-app python:3.8~https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --strategy=source --env=APP_CONFIG=./gunicorn/gunicorn.conf.py --env=APP_MODULE=runapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV```  
 - Public Repo using the Dockerfile to build(Docker Strategy)  
 ```oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV --strategy=docker```
   
-***Patch Environment Details with information from DownWardAPI that our application uses to provide information details***  
+***Patch Environment Details with Configuration information from Configmap and DownWardAPI.We externalize configration in configmap to allow changes without updating code. We are using the DownWardAPI patch to provide platform details to our application.***  
+```oc create configmap testflask-gunicorn-config --from-file=./gunicorn/gunicorn.conf.py -n $NAMESPACE_DEV```
+
+```oc set volume deploy/testflask --add --configmap-name testflask-gunicorn-config --mount-path /app/gunicorn --type configmap -n $NAMESPACE_DEV```
+
 ```oc patch deploy/$APP_NAME --patch "$(curl https://raw.githubusercontent.com/MoOyeg/testFlask/master/patch-env.json | envsubst)" -n $NAMESPACE_DEV```
 
 7 **Expose the service to the outside world with an openshift route**  
-```oc expose svc/$APP_NAME -n $NAMESPACE_DEV```
+```oc expose svc/$APP_NAME --port 8080 -n $NAMESPACE_DEV```
 
-8 **We can provide your database secret to your app deployment, so your app can use those details**  
+8 **We can provide the database secret to your app deployment, so your app can move to using our provisioned mysql rather than in-mem sqlite.**  
 ```oc set env deploy/$APP_NAME --from=secret/my-secret -n $NAMESPACE_DEV```
 
 9 **You should be able to log into the openshift console now to get a better look at the application, all the commands above can be run in the console, to get more info about the developer console please visit [Openshift Developer Console](https://docs.openshift.com/container-platform/4.4/applications/application_life_cycle_management/odc-creating-applications-using-developer-perspective.html)**
@@ -106,7 +110,7 @@
   - ```oc get ep/$APP_NAME -n $NAMESPACE_DEV```  
   - Since the readiness removes the pod endpoint from the service we will not be able to access the app page anymore  
   - We will need to log into the pod to enable the readiness back  
-    ```POD_NAME=$(oc get pods -l deploymentconfig=$APP_NAME -n $NAMESPACE_DEV -o name | head -n 1)```  
+    ```POD_NAME=$(oc get pods -l deployment=$APP_NAME -n $NAMESPACE_DEV -o name | head -n 1)```  
   - Exec the Pod and curl the pod API to start the pod readiness  
     ```oc exec $POD_NAME curl http://localhost:8080/ready_down?status=up```  
 
@@ -232,7 +236,7 @@ spec:
           - name: APP_CONFIG
             value: "gunicorn.conf.py"
           - name: APP_MODULE
-            value: "testapp:app"
+            value: "runapp:app"
           - name: MYSQL_HOST
             value: $MYSQL_HOST
           - name: MYSQL_DATABASE 
@@ -248,4 +252,4 @@ EOF
      ```oc new-build https://github.com/MoOyeg/s2i-python-custom.git --name=s2i-ubi8-uvicorn --context-dir=s2i-ubi8-uvicorn -n $NAMESPACE_DEV```
 
 - Build Application Image using previous image with custom gunicorn worker  
-     ```oc new-app s2i-ubi8-uvicorn~https://github.com/MoOyeg/testFlask.git#quart --name=testquart -l app=testquart --strategy=source --env=APP_CONFIG=gunicorn-uvi.conf --env=APP_MODULE=testapp:app --env CUSTOM_WORKER="true" -n $NAMESPACE_DEV```
+     ```oc new-app s2i-ubi8-uvicorn~https://github.com/MoOyeg/testFlask.git#quart --name=testquart -l app=testquart --strategy=source --env=APP_CONFIG=gunicorn-uvi.conf --env=APP_MODULE=runapp:app --env CUSTOM_WORKER="true" -n $NAMESPACE_DEV```

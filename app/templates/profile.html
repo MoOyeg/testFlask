@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<div class="container-fluid">
+    <h1 class="mt-4">Profile Information</h1>
+    <p>Username: {{ username }}</p>
+    <p>FirstName: {{ firstname }}</p>
+    <p>LastName: {{ lastname }}</p>
+</div>
+
+{% endblock %}

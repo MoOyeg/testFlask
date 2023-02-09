@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+          <!--Jquery JS-->      
+<!-- <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script> -->
+<script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/misc.js')}}"></script>
+<div class="container-fluid">
+    <h1 class="mt-4">Notes</h1>
+    <p> Simulates a multi-user note taking app </p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class=flashes>
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <p>
+      <button type="button" id="add_new_note_toggle" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#collapseView" aria-expanded="true" aria-controls="collapseView">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
+        </svg>
+        Add New Note
+      </button>
+    </p>
+    <div class="collapse" id="collapseView">
+      <div class="card card-body">
+        <form action="" method="post" novalidate>        
+          <div class="form-group">
+              {{ postform.hidden_tag() }}
+              <p>
+                  {{ postform.title.label }}<br>
+                  {{ postform.title(size=32, id="note_forms_title_inputarea") }}
+              </p>
+              <p>
+                  {{ postform.text.label }}<br>
+                  {{ postform.text(class="form-control",id="note_forms_text_inputarea") }}
+              </p>
+              <p>{{ postform.submit(class_="btn btn-primary",id="note-submit-button") }}</p>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card-deck">
+      {% for note in notes_list %}
+      <div class="card">        
+        <img class="card-img-top" src="{{url_for('static', filename='assets/notesr.jpg')}}" alt="Note {{ note.title }}">
+        <div class="card-body">
+          <h5 class="card-title">{{ note.title }}</h5>
+          <p class="card-text">{{ note.note }}</p>
+        </div>
+        <div class="card-footer">
+          <button type="button" onclick='editNoteFunction("{{ note.title }}","{{ note.note }}")' id=button-edit-{{ note.title }}-{{ user_id }} class="btn btn-success" width="20" height="10">Edit</button>
+          <button type="button" onclick='deleteNoteFunction("{{url_for('main.delete_title')}}","{{ note.id }}","{{ user_id }}")' id=button-delete-{{ note.title }}-{{ user_id }} class="btn btn btn-danger" width="20" height="10">Delete</button>
+        </div>           
+      </div>
+      {% endfor %}
+    </div>
+<!--   
+    <div class="table-responsive-md">
+        <table class="table table-hover">
+            <tr>
+                <th>Timestamp</th>
+                <th>Titles</th>
+                <th>Notes</th>
+                <th>Delete</th>
+            </tr>
+
+            {% for note in notes_list %}
+            <tr>
+                <td>{{ note.timestamp }}</td>
+                <td>{{ note.title }}</td>
+                <td>{{ note.note }}</td>
+                <td><a href={{url_for('main.delete_title')}}?id={{ note.id }}&user_id={{ user_id }}>Delete {{ note.title }}</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+-->
+</div>
+{% endblock %}
+
+</html>

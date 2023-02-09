@@ -11,9 +11,9 @@ from wtforms.validators import ValidationError, DataRequired, Length
 
 class PostForm(FlaskForm):
     '''Set Form to be used fields'''
-    key = StringField('Key', validators=[DataRequired()])
-    value = StringField('Value', validators=[DataRequired()])
-    add = SubmitField('Add')
-    remove_key = StringField('Key')
-    remove = SubmitField('Remove')
+    title = StringField('title', validators=[DataRequired()])
+    text= TextAreaField('text', validators=[DataRequired()])
+    submit = SubmitField('submit')
+    # remove_key = StringField('Key')
+    # remove = SubmitField('Remove')
     

@@ -3,8 +3,10 @@ FROM image-registry.openshift-image-registry.svc:5000/openshift/ubi8
 #FROM registry.redhat.io/ubi8/ubi:latest
 
 #ENV Variables
-ENV APP_MODULE testapp:app
-ENV APP_CONFIG gunicorn.conf.py
+ENV APP_MODULE runapp:app
+ENV APP_CONFIG gunicorn/gunicorn.conf.py
+ENV APP_SCRIPT ./runapp.sh
+ENV DOCKERFILE_RUN true
 
 # Install the required software
 RUN yum update -y && yum install git python38 -y
@@ -25,13 +27,16 @@ WORKDIR ./app
 RUN pip3.8 install -r requirements.txt
 
 #Expose Ports
+#Web Port
 EXPOSE 8080/tcp
+#Debug Port
+EXPOSE 5679/tcp
 
 #Change Permissions to allow not root-user work
-RUN chmod -R g+rw ./
+RUN chmod -R g+rw ./ && chmod +x runapp.sh
 
 #Change User
 USER 1001
 
 #ENTRY
-ENTRYPOINT gunicorn -c $APP_CONFIG $APP_MODULE
+ENTRYPOINT $APP_SCRIPT
