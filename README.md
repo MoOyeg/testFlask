@@ -334,5 +334,5 @@ Build and Alternate version of the testflask application using ASGI and Uvicorn*
 
 - Build Application Image using previous image with custom gunicorn worker  
      ```bash
-     oc new-app s2i-ubi8-uvicorn~https://github.com/MoOyeg/testFlask.git#quart --name=testquart -l app=testquart --strategy=source --env=APP_CONFIG=gunicorn-uvi.conf --env=APP_MODULE=runapp:app --env CUSTOM_WORKER="true" -n $NAMESPACE_DEV
+     oc new-app s2i-ubi8-uvicorn~https://github.com/MoOyeg/testFlask.git#quart --name=testquart -l app=testquart --strategy=source --env=APP_CONFIG=gunicorn-uvi.conf --env=APP_MODULE=testapp:app --env CUSTOM_WORKER="true" -n $NAMESPACE_DEV
      ```
