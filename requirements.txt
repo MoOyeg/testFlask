@@ -6,7 +6,7 @@ certifi==2022.12.7
 cffi==1.14.0
 charset-normalizer==3.0.1
 click==7.1.2
-cryptography==3.3.2
+cryptography==39.0.1
 debugpy==1.6.6
 defusedxml==0.7.1
 dominate==2.5.1
