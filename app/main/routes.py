@@ -291,8 +291,12 @@ def custom_authmodule(route_func):
         '''Oauth Authentication using OpenShift's integrated Oauth Proxy - https://github.com/MoOyeg/testFlask-Oauth-Proxy'''
         check_db_init()
         # Check if user already logged in
-        if request.authorization.username is None:
-                return redirect("https://{}:{}".format(Config.OPENSHIFT_OAUTH_PROXY_ADDRESS,Config.OPENSHIFT_OAUTH_PROXY_PORT))
+        try:
+            if request.authorization.username is None:
+                    return redirect("https://{}:{}".format(Config.OPENSHIFT_OAUTH_PROXY_ADDRESS,Config.OPENSHIFT_OAUTH_PROXY_PORT))
+        except AttributeError:
+                    return redirect("https://{}:{}".format(Config.OPENSHIFT_OAUTH_PROXY_ADDRESS,Config.OPENSHIFT_OAUTH_PROXY_PORT))
+
         authenticated_username=request.authorization.username
         auth_method="openshift_oauth_proxy"
 
