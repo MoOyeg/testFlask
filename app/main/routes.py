@@ -330,7 +330,6 @@ def index(**kwargs):
     '''Starting Index Page'''
     PostForm()
     fullurl = ""
-
     
     try:
         if not kwargs["authenticated_user"]:
