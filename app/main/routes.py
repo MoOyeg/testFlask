@@ -292,10 +292,12 @@ def custom_authmodule(route_func):
         check_db_init()
         # Check if user already logged in
         try:
+            fullurl = request.base_url
             if request.authorization.username is None:
-                    return redirect("https://{}:{}".format(Config.OPENSHIFT_OAUTH_PROXY_ADDRESS,Config.OPENSHIFT_OAUTH_PROXY_PORT))
+                    return redirect(fullurl)
         except AttributeError:
-                    return redirect("https://{}:{}".format(Config.OPENSHIFT_OAUTH_PROXY_ADDRESS,Config.OPENSHIFT_OAUTH_PROXY_PORT))
+                    fullurl = request.base_url
+                    return redirect(fullurl)
 
         authenticated_username=request.authorization.username
         auth_method="openshift_oauth_proxy"
