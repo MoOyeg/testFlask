@@ -31,3 +31,4 @@ location.href = url + "?id=" + note_id + "&user_id=" + user_id;
 function myscrollTop() {
   window.scrollTo(0, 0);
 };
+

@@ -45,6 +45,7 @@ def check_health():
             "Checking if Application is Healthy - Application is Unhealthy")
     return HEALTH_STATUS_OK
 
+
 def check_ready():
     """ Simulates Application Readiness for Kubernetes Probes
         Will Store Application Health in Variable READY_STATUS_OK for now """
@@ -57,6 +58,7 @@ def check_ready():
             "Checking if Application is Ready - Application is not Ready")
     return READY_STATUS_OK
 
+
 def note_read(user_id, note_id=None, title=None):
     '''Meant to Read a note Object and return it's contents'''
 
@@ -68,12 +70,14 @@ def note_read(user_id, note_id=None, title=None):
         user_notes = Note.query.filter_by(user_id=user_id)
     return user_notes
 
+
 def insert_statement_count(user_id):
     '''Return Number of Insert Statments by User'''
     insert_count = InsertCountMetric.query.filter_by(user_id=user_id).first()
     if insert_count is None:
         return None
     return insert_count.count
+
 
 def delete_statement_count(user_id):
     '''Return Number of Delete Statments by User'''
@@ -82,6 +86,7 @@ def delete_statement_count(user_id):
         return None
     return delete_count.count
 
+
 def note_count(user_id):
     '''Meant to return counts of user notes'''
     user = User.query.filter_by(id=user_id).first()
@@ -89,7 +94,8 @@ def note_count(user_id):
         return None
     return user.user_note_count
 
-def refresh_notes_view(url, user_id):
+
+def refresh_notes_view(url, user_id) -> list:
     """ Refresh Database View"""
 
     current_app.logger.debug("Refresh DB view")
@@ -111,22 +117,29 @@ def refresh_notes_view(url, user_id):
         refresh_db_count += 1
     return [refresh_db_note, refresh_db_time, refresh_db_remove, refresh_db_count]
 
-def get_user(user_id, **kwargs):
+def get_user(user_id, **kwargs) -> User:
     '''Method is to Get User Information'''
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return None
     return user
 
-def get_user_username(user_id, **kwargs):
-    '''Method is to Get UserName'''
+
+def get_user_username(user_id, **kwargs) -> str:
+    '''Method is to Get UserName'''   
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return None
     return user.username
 
+def get_user_by_authmethod(auth_method,username) -> User:
+    user = User.query.filter_by(username=username, auth_method=auth_method).first()
+    if user is None:
+        return None
+    return user
+
 def check_db_init():
-    '''Make Sure DB is Initialized with Our Table before we start'''
+    '''Make Sure DB is Initialized with Our Tables before we start'''
     # Variable stores global INIT Flag for database
     current_app.logger.debug("Check If DB is Initalized Method was called")
     if not Config.DB_INIT:
@@ -137,23 +150,27 @@ def check_db_init():
         except Exception as error:
             current_app.logger.error("{}".format(error))
 
-def update_user_action_counter(user_id,action):
+
+def update_user_action_counter(user_id, action):
     '''Method to help keep track how many times a specfic user inserts or delete from the DB,Does not commit expects the calling function to commit'''
 
     if action == "insert":
-        insert_counter = InsertCountMetric.query.filter_by(user_id=user_id).first()
+        insert_counter = InsertCountMetric.query.filter_by(
+            user_id=user_id).first()
         if insert_counter == None:
             db.session.add(
-            InsertCountMetric(count=1, user_id=user_id))
+                InsertCountMetric(count=1, user_id=user_id))
         else:
             insert_counter.count = insert_counter.count + 1
     elif action == "delete":
-        delete_counter = DeleteCountMetric.query.filter_by(user_id=user_id).first()
+        delete_counter = DeleteCountMetric.query.filter_by(
+            user_id=user_id).first()
         if delete_counter == None:
             db.session.add(
-            DeleteCountMetric(count=1, user_id=user_id))
+                DeleteCountMetric(count=1, user_id=user_id))
         else:
             delete_counter.count = delete_counter.count + 1
+
 
 def notes_insert(user_id, **kwargs):
     """ Method to handle insertion into DB
@@ -181,13 +198,14 @@ def notes_insert(user_id, **kwargs):
     if note is not None:
         note.note = kwargs["note"]
         note.timestamp = kwargs["insertime"]
-        update_user_action_counter(user_id,"insert")
+        update_user_action_counter(user_id, "insert")
         db.session.commit()
     else:
         db.session.add(
             Note(title=kwargs["title"], note=kwargs["note"], user_id=note_user.id))
-        update_user_action_counter(user_id,"insert")
+        update_user_action_counter(user_id, "insert")
         db.session.commit()
+
 
 def notes_delete(user_id, note_id, **kwargs):
     """ Method to handle deletion from db
@@ -204,120 +222,105 @@ def notes_delete(user_id, note_id, **kwargs):
         current_app.logger.debug("Could not delete note_id:{} for user {})".format(
             note_id, note_user.username))
         return {"status": "BAD"}
-    
+
     db.session.delete(notes)
-    update_user_action_counter(user_id,"delete")
+    update_user_action_counter(user_id, "delete")
     db.session.commit()
     return {"status": "OK"}
 
-def create_user(firstname, **kwargs):
+
+def create_user(firstname, **kwargs) -> User:
     '''Method is Used to Create a User in The DB'''
-    check_db_init()
     current_app.logger.debug("User Creation Method Called")
+
+    #Generate Username if not Provided
     if "username" not in kwargs:
         username = "{}{}".format(firstname, randrange(0, 100))
     else:
         username = kwargs["username"]
 
-    #Check if User Already Exists
-    user = User.query.filter_by(username=username).first()
+    #Set auth_method if not provided
+    if "auth_method" not in kwargs:
+        auth_method = "no_authentication"
+    else:
+        auth_method = kwargs["auth_method"]
+
+    # Check if User Already Exists
+    user = User.query.filter_by(username=username, auth_method=auth_method).first()
     if user is None:
         if "id" in kwargs:
             # Try to set ID if provided
             db.session.add(
-                User(firstname=firstname, username=username, id=kwargs["id"]))
-        else:       
-            db.session.add(User(firstname=firstname, username=username))
+                User(firstname=firstname, username=username, auth_method=auth_method, id=kwargs["id"]))
+        else:
+            db.session.add(User(firstname=firstname, username=username, auth_method=auth_method))
     else:
-        current_app.logger.debug("User with Username {} already exists, will skip creation".format("username"))
+        current_app.logger.debug(
+            "User with Username {} already exists, will skip creation".format("username"))
 
     try:
         db.session.commit()
     except Exception as error:
         current_app.logger.error("{}".format(error))
         return None
-        
-    created_user = User.query.filter_by(username=username).first()
-    return_dict = {"id": created_user.id, "username": username}
-    return return_dict
-  
-def custom_render_template(*args, **kwargs):
-    '''Custom Render Template Function to insert extra values'''
-    try:
-        kwargs["logged_in_user"] = current_app.config["authenticated_username"]
-    except:
-        pass
-    return render_template(*args, **kwargs)
+
+    created_user = User.query.filter_by(username=username,auth_method=auth_method).first()
+    return created_user
 
 def custom_authmodule(route_func):
     '''Module is a method we use to simulate different kinds of authentication options'''
-    def setauthenticated_user(user_id, username):
-        '''Set Authenticated User Credentials'''
-        current_app.config["authenticated_id"] = user_id
-        current_app.config["authenticated_username"] = username
-        current_app.config["authenticated"] = True
-
-    @wraps(route_func)
-    def user_authentication_valid(*args, **kwargs):
-        # To-do Add methods for validation
-        current_app.logger.debug("Check Authentication Validity")
-        kwargs["authenticated_user_id"] = current_app.config["authenticated_id"]
-        kwargs["authenticated_username"] = current_app.config["authenticated_username"]
-        kwargs["authenticated"] = True
-        return route_func(*args, **kwargs)
-
-    def user_already_logged_in():
-        '''Check if user already logged in'''
-        current_app.logger.debug("check if User is already logged in")
-
-        try:
-            user_id = request.cookies.get("{}-user_id".format(
-                current_app.config["SESSION_COOKIE_HEADER"]))
-        except:
-            pass
-
-        if user_id is not None:
-            return True
-
-        if "authenticated" in current_app.config:
-            if current_app.config["authenticated"]:
-                return True
-        return False
-
-    @wraps(route_func)
-    def decorated_view(*args, **kwargs):
-        return route_func(*args, **kwargs)
 
     @wraps(route_func)
     def no_authentication(*args, **kwargs):
         '''Module assumes no authentication is in use'''
-
-        # Check if user already logged in
-        if user_already_logged_in():
-            return user_authentication_valid(*args, **kwargs)
-
-        current_app.logger.error(
-            "Application is working with no Authentication, Will create a default Administrator user")
-        user_dict = create_user(firstname="Administrator",
-                                id=1, username="Administrator")
-        kwargs["authenticated_user"] = "Administrator"
-        kwargs["authenticated"] = True
-        kwargs["authenticated_user_id"] = user_dict["id"]
-        kwargs["authenticated_username"] = user_dict["username"]
-        setauthenticated_user(user_dict["id"], user_dict["username"])
+        check_db_init()
+        # Check if user exists
+        user = get_user_by_authmethod("no_authentication","Administrator")
+        if user is None:
+            current_app.logger.error(
+                "Application is working with no Authentication, Will create a default Administrator user")
+            user = create_user(firstname="Administrator",
+                                    id=1, username="Administrator", auth_method="no_authentication")
+        user = get_user_by_authmethod("no_authentication","Administrator")
+        kwargs["authenticated_user"] = user
+        kwargs["authenticated"] = True       
         return route_func(*args, **kwargs)
 
-    if not Config.AUTH_INTEGRATION:
-        return no_authentication
-    else:
-        return decorated_view
+    @wraps(route_func)
+    def openshift_oauth_proxy(*args, **kwargs):
+        '''Oauth Authentication using OpenShift's integrated Oauth Proxy - https://github.com/MoOyeg/testFlask-Oauth-Proxy'''
+        check_db_init()
+        # Check if user already logged in
+        if request.authorization.username is None:
+                return redirect("https://{}:{}".format(Config.OPENSHIFT_OAUTH_PROXY_ADDRESS,Config.OPENSHIFT_OAUTH_PROXY_PORT))
+        authenticated_username=request.authorization.username
+        auth_method="openshift_oauth_proxy"
 
+        # Check if user already exists
+        if get_user_by_authmethod(username=authenticated_username,auth_method=auth_method) is None:
+            create_user(authenticated_username,username=authenticated_username,auth_method=auth_method)
+        
+        #Get User Information
+        User = get_user_by_authmethod(username=authenticated_username,auth_method=auth_method)
+        kwargs["authenticated_user"] = User
+        kwargs["authenticated"] = True
+
+        return route_func(*args, **kwargs)
+
+    if Config.AUTH_INTEGRATION.lower() == "false":
+        return no_authentication
+
+    if Config.AUTH_TYPE.lower() == "openshift_oauth_proxy":
+        return openshift_oauth_proxy
+
+    if Config.AUTH_TYPE.lower() == "":
+        return no_authentication
 
 @bp.route('/base', methods=['GET', 'POST'])
 @custom_authmodule
 def base():
     """ Render Base HTML WebPage"""
-    return custom_render_template('base2.html')
+    return render_template('base2.html')
 
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -327,13 +330,14 @@ def index(**kwargs):
     '''Starting Index Page'''
     PostForm()
     fullurl = ""
-
+    
     try:
-        if not kwargs["authenticated"]:
+        if not kwargs["authenticated_user"]:
             return redirect('/error-not-authenticated')
     except KeyError:
         return redirect('/error-not-authenticated')
 
+    authenticated_user = kwargs["authenticated_user"]
     current_app.logger.debug("Loading Index Page")
     fullurl = request.base_url
     healthdown_url = fullurl.replace("/index", "/health_down")
@@ -344,7 +348,7 @@ def index(**kwargs):
         healthdown_url = "{}{}".format(healthdown_url, "health_down")
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
-    return custom_render_template('index.html')
+    return render_template('index.html',authenticated_user=authenticated_user)
 
 
 @bp.route('/notes', methods=['GET', 'POST'])
@@ -358,7 +362,7 @@ def notes(**kwargs):
     form = PostForm()
     fullurl = request.base_url
 
-    user_id = kwargs["authenticated_user_id"]
+    authenticated_user = kwargs["authenticated_user"]
 
     if form.validate_on_submit():
         current_app.logger.debug("Notes Page View - Submit was clicked")
@@ -366,17 +370,17 @@ def notes(**kwargs):
         input_value = request.form["text"]
         insertime = datetime.utcnow()
 
-        output = notes_insert(user_id=user_id, insertime=insertime,
+        output = notes_insert(user_id=authenticated_user.id, insertime=insertime,
                               title=input_key, note=input_value)
 
         # if output["status"] == "error":
         # if output["error"] == DUPLICATE_KEY_DB_MESSAGE:
         #     flash(DUPLICATE_KEY_DB_MESSAGE, 'error')
         # notes_list = note_read(user_id)
-        # return custom_render_template('notes.html', form=form, configs=configs, notes_list=notes_list)
+        # return render_template('notes.html', form=form, configs=configs, notes_list=notes_list)
 
-    notes_list = note_read(user_id)
-    return custom_render_template('notes.html', postform=form, configs=configs, notes_list=notes_list, user_id=user_id)
+    notes_list = note_read(authenticated_user.id)
+    return render_template('notes.html', postform=form, configs=configs, notes_list=notes_list, authenticated_user=authenticated_user,user_id=authenticated_user.id)
 
 
 @bp.route('/insert', methods=['POST'])
@@ -384,8 +388,7 @@ def notes(**kwargs):
 def insert(**kwargs):
     '''Insert into DB via API'''
     current_app.logger.debug("Insert API is being called")
-    username = kwargs["authenticated_username"]
-    id = kwargs["authenticated_user_id"]
+    authenticated_user = kwargs["authenticated_user"]
 
     try:
         input_key = str(request.args.get("key"))
@@ -396,7 +399,7 @@ def insert(**kwargs):
             "Error something wrong doing a DB insert on values")
         return make_response(jsonify({'Status': 'Server could not process Input Values'}), 503)
 
-    output = notes_insert(user_id=id, insertime=insertime,
+    output = notes_insert(user_id=authenticated_user.id, insertime=insertime,
                           key=input_key, value=input_value)
 
     if output["status"] == "error":
@@ -408,8 +411,8 @@ def insert(**kwargs):
 @custom_authmodule
 def profile(**kwargs):
     '''Returns Profile and User Information'''
-    id = kwargs["authenticated_user_id"]
-    user = get_user(id)
+    authenticated_user = kwargs["authenticated_user"]
+    user = get_user(authenticated_user.id)
     if user is not None:
         username = user.username
         firstname = user.firstname
@@ -418,7 +421,7 @@ def profile(**kwargs):
         username = None
         firstname = None
         lastname = None
-    return custom_render_template('profile.html', username=username, firstname=firstname, lastname=lastname)
+    return render_template('profile.html', username=username, firstname=firstname, lastname=lastname,authenticated_user=authenticated_user)
 
 
 @bp.route('/configuration', methods=['GET'])
@@ -426,8 +429,9 @@ def profile(**kwargs):
 def configuration(**kwargs):
     """ Render Configuration WebPage"""
     current_app.logger.debug("Obtain Application Configuration")
+    authenticated_user = kwargs["authenticated_user"]
     configs = myclassvariables()
-    return custom_render_template('configuration.html', configs=configs)
+    return render_template('configuration.html', configs=configs,authenticated_user=authenticated_user)
 
 
 @bp.route('/health_status', methods=['GET', 'POST'])
@@ -440,6 +444,7 @@ def health_status(**kwargs):
     fullurl = request.base_url
     healthdown_url = fullurl.replace("/health_status", "/health_down")
     readydown_url = fullurl.replace("/health_status", "/ready_down")
+    authenticated_user = kwargs["authenticated_user"]
 
     # Need to confirm health_down applied since / and /index might be diff
     if "health_down" not in healthdown_url:
@@ -447,8 +452,8 @@ def health_status(**kwargs):
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
 
-    return custom_render_template('health_status.html', form=form, configs=configs,
-                                  health_url=healthdown_url, ready_url=readydown_url, ready=check_ready(), health=check_health())
+    return render_template('health_status.html', form=form, configs=configs,
+                                  health_url=healthdown_url, ready_url=readydown_url, ready=check_ready(), health=check_health(),authenticated_user=authenticated_user)
 
 
 @bp.route('/delete_title', methods=['GET', 'POST'])
@@ -456,6 +461,7 @@ def health_status(**kwargs):
 def delete_title(**kwargs):
     '''Method to remove key from DB'''
 
+    authenticated_user = kwargs["authenticated_user"]
     try:
         value_remove = request.args.get("id")
         user_remove = request.args.get("user_id")
@@ -473,22 +479,22 @@ def metrics(**kwargs):
 
     current_app.logger.info("Metric URL Was Called")
     # Provide Some Metrics to External Platforms
-    user_id = kwargs["authenticated_user_id"]
+    authenticated_user = kwargs["authenticated_user"]
 
-    counts = note_count(user_id)
+    counts = note_count(authenticated_user.id)
     if counts is None:
         counts = 0
 
-    db_inserts = insert_statement_count(user_id)
+    db_inserts = insert_statement_count(authenticated_user.id)
     if db_inserts is None:
         db_inserts = 0
 
-    db_deletes = delete_statement_count(user_id)
+    db_deletes = delete_statement_count(authenticated_user.id)
     if db_deletes is None:
         db_deletes = 0
     response = make_response(
-    """Current Metrics for user: {}\nCurrent Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
-        get_user_username(user_id),counts, db_inserts, db_deletes), 200)
+        """Current Metrics for user: {}\nCurrent Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
+            get_user_username(authenticated_user.id), counts, db_inserts, db_deletes), 200)
     response.content_type = "text/plain"
     return response
 
