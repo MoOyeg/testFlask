@@ -46,7 +46,7 @@
             href="{{url_for('main.configuration')}}"
             >Application Configuration</a
           >
-          {% if logged_in_user is defined %}
+          {% if authenticated_user is defined %}
           <a
             class="list-group-item list-group-item-action list-group-item-light p-3"
             href="{{url_for('main.notes')}}"
@@ -88,8 +88,8 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
-                {% if logged_in_user is defined %}
-                <a class="nav-link" href="#!">{{ logged_in_user }}</a>
+                {% if authenticated_user is defined %}
+                <a class="nav-link" href="#!">{{ authenticated_user.username }}</a>
                 {% else %}
                 <li class="nav-item">
                   <a class="nav-link" href="#!">Log In</a>

@@ -33,6 +33,7 @@ class User(db.Model):
     firstname = db.Column(db.String(120), unique=False)
     lastname = db.Column(db.String(120), unique=False)
     fullname = db.column_property(firstname + " " + lastname)
+    auth_method = db.Column(db.String(120), unique=False)
     user_note = db.relationship(Note, backref='report')    
     user_note_count = db.column_property(db.select([db.func.count(Note.id)]).\
             where(Note.user_id==id).\
