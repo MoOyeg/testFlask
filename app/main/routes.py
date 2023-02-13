@@ -20,7 +20,7 @@ from app.main.forms import PostForm
 from app.errors import ValidationError
 from app.models import User, Note, InsertCountMetric, DeleteCountMetric
 from config import Config
-
+import requests
 import sys
 from config import myclassvariables
 from random import randrange
@@ -32,6 +32,10 @@ HEALTH_STATUS_OK = True
 READY_STATUS_OK = True
 # Duplicate Key in DB Error Message
 DUPLICATE_KEY_DB_MESSAGE = "Duplicate Key Error"
+#Functions we want access maybe without authentication
+ANONYMOUS_ACCESS_FUNCTIONS = ["__ready__"]
+INDEX_COUNT=0
+INDEX_CALLED = "false"
 
 
 def check_health():
@@ -267,6 +271,27 @@ def create_user(firstname, **kwargs) -> User:
     created_user = User.query.filter_by(username=username,auth_method=auth_method).first()
     return created_user
 
+def custom_logoutmodule(user,response) -> dict:
+    '''Enables logout based on user auth_method specificed'''
+    try:
+        auth_method = user.id
+    except:
+        current_app.logger.error("Could not get error when trying to logout User")
+    
+    if auth_method == "openshift_oauth_proxy":
+        try:
+            response.set_cookie(Config.OPENSHIFT_OAUTH_PROXY_COOKIE_NAME, "")
+        except:
+            current_app.logger.error("Could not clear openshift oauth cookie for auth_method: {}".format(auth_method))
+        
+        try:
+            request.authorization.username = ""
+        except:
+            current_app.logger.error("Could not clear logged in user auth_method: {}".format(auth_method))
+
+
+    return {"response": response,"error":"","info":""}
+        
 def custom_authmodule(route_func):
     '''Module is a method we use to simulate different kinds of authentication options'''
 
@@ -289,8 +314,21 @@ def custom_authmodule(route_func):
     @wraps(route_func)
     def openshift_oauth_proxy(*args, **kwargs):
         '''Oauth Authentication using OpenShift's integrated Oauth Proxy - https://github.com/MoOyeg/testFlask-Oauth-Proxy'''
+
+        # Check if we can reach the oauth_proxy
+        try:
+            check_code = requests.get("https://{}:{}/healthz".format(Config.OPENSHIFT_OAUTH_PROXY_ADDRESS,Config.OPENSHIFT_OAUTH_PROXY_PORT))
+        except:            
+            current_app.logger.error(
+                "Openshift Oauth-Proxy was selected but we could not reach proxy server at https://{}:{}".format(
+                Config.OPENSHIFT_OAUTH_PROXY_ADDRESS,Config.OPENSHIFT_OAUTH_PROXY_PORT))
+            current_app.logger.error("We will Switch to using No Authentication")
+            return no_authentication(*args,**kwargs)        
+        
+        # Check if DB is initalized
         check_db_init()
-        # Check if user already logged in
+
+        # Check if user already logged and if not redirect back to fullurl where proxy should be listening
         try:
             fullurl = request.base_url
             if request.authorization.username is None:
@@ -310,9 +348,16 @@ def custom_authmodule(route_func):
         User = get_user_by_authmethod(username=authenticated_username,auth_method=auth_method)
         kwargs["authenticated_user"] = User
         kwargs["authenticated"] = True
-
         return route_func(*args, **kwargs)
 
+    @wraps(route_func)
+    def anonymous_access(*args,**kwargs):
+        current_app.logger.debug("Anonymous access enabled for {}".format(route_func.__name__))
+        return route_func(*args, **kwargs)
+
+    if route_func.__name__ in ANONYMOUS_ACCESS_FUNCTIONS:
+        return anonymous_access
+    
     if Config.AUTH_INTEGRATION.lower() == "false":
         return no_authentication
 
@@ -334,9 +379,14 @@ def base():
 @custom_authmodule
 def index(**kwargs):
     '''Starting Index Page'''
+    global INDEX_CALLED
+    global INDEX_COUNT
+
     PostForm()
     fullurl = ""
-    
+    INDEX_COUNT += 1
+    if INDEX_COUNT > 1:
+        INDEX_CALLED = "true"    
     try:
         if not kwargs["authenticated_user"]:
             return redirect('/error-not-authenticated')
@@ -354,7 +404,9 @@ def index(**kwargs):
         healthdown_url = "{}{}".format(healthdown_url, "health_down")
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
-    return render_template('index.html',authenticated_user=authenticated_user)
+    return render_template('index.html'
+                           ,authenticated_user=authenticated_user
+                           ,new_session=INDEX_CALLED)
 
 
 @bp.route('/notes', methods=['GET', 'POST'])
@@ -386,7 +438,11 @@ def notes(**kwargs):
         # return render_template('notes.html', form=form, configs=configs, notes_list=notes_list)
 
     notes_list = note_read(authenticated_user.id)
-    return render_template('notes.html', postform=form, configs=configs, notes_list=notes_list, authenticated_user=authenticated_user,user_id=authenticated_user.id)
+    return render_template('notes.html', postform=form, 
+                           configs=configs, notes_list=notes_list, 
+                           authenticated_user=authenticated_user,
+                           user_id=authenticated_user.id, 
+                           delete_url=url_for('main.delete_title'))
 
 
 @bp.route('/insert', methods=['POST'])
@@ -548,6 +604,36 @@ def ready_down(**kwargs):
         READY_STATUS_OK = True
     return redirect('/health_status')
 
+@bp.route('/logout', methods=['GET'])
+@custom_authmodule
+def logout(**kwargs):
+    global INDEX_CALLED
+    global INDEX_COUNT
+
+    try:
+        if not kwargs["authenticated_user"]:
+            return redirect('/error-not-authenticated')
+        user = kwargs["authenticated_user"]
+    except KeyError:
+        return redirect('/error-not-authenticated')
+
+    try:
+        user_id = request.args.get("user_id")            
+    except KeyError:
+        return redirect('/error-not-authenticated')   
+
+    
+    if str(user_id) != str(user.id):
+        current_app.logger.debug("User ID Provided did not match authenticated user ID")
+        return redirect('/error-not-authenticated')
+
+    INDEX_CALLED = "false"
+    INDEX_COUNT = 0
+    
+
+    resp = make_response(render_template('logout.html'))
+    updated_resp = custom_logoutmodule(kwargs["authenticated_user"],resp)
+    return updated_resp["response"]
 
 @bp.route('/error-not-authenticated', methods=['GET'])
 def display_unuauthenticated():

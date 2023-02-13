@@ -70,7 +70,8 @@ class Config():
     OPENSHIFT_OAUTH_PROXY_ADDRESS = os.environ.get(
         'OPENSHIFT_OAUTH_PROXY_ADDRESS') or "localhost"
     OPENSHIFT_OAUTH_PROXY_PORT = os.environ.get('OPENSHIFT_OAUTH_PROXY_PORT') or "8888"
-
+    OPENSHIFT_OAUTH_PROXY_COOKIE_NAME = os.environ.get('OPENSHIFT_OAUTH_PROXY_COOKIE_NAME') or "_oauth_proxy"
+    
     # Generate URI from Parameters
     SQLALCHEMY_DATABASE_URI = create_uri(SQLALCHEMY_DATABASE_USERNAME, SQLALCHEMY_DATABASE_PASSWORD, SQLALCHEMY_DATABASE_HOST,
                                          SQLALCHEMY_DATABASE_DB)

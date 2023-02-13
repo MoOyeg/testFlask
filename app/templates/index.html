@@ -17,6 +17,16 @@
             href="https://github.com/MoOyeg/testFlask">Application github link</a></p>
     <p></p>
     <p>
+    {% if new_session == "false" %}
+    {% if authenticated_user %}   
+    {% if authenticated_user.auth_method == 'no_authentication' %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Application is running in 'No Authentication mode'</strong> You were logged-in as admin.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    {% endif %}
+    {% endif %}
     <dl>
         <dt>Application Configuration via Environment Variables</dt>
         <dd>- <a href="{{url_for('main.configuration')}}">Application Configuration Tab</a> [View Configured Enviroment
