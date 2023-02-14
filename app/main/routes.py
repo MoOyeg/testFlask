@@ -281,6 +281,12 @@ def create_user(firstname, **kwargs) -> User:
 
 def custom_logoutmodule(user, response) -> dict:
     '''Enables logout based on user auth_method specificed'''
+    response = response
+    error = ""
+    info = ""
+    redirect = False
+    redirect_url = ""
+
     try:
         auth_method = user.id
     except:
@@ -288,19 +294,14 @@ def custom_logoutmodule(user, response) -> dict:
             "Could not get error when trying to logout User")
 
     if auth_method == "openshift_oauth_proxy":
-        try:
-            response.set_cookie(Config.OPENSHIFT_OAUTH_PROXY_COOKIE_NAME, "")
-        except:
-            current_app.logger.error(
-                "Could not clear openshift oauth cookie for auth_method: {}".format(auth_method))
+        redirect = True
+        redirect_url = Config.OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT
 
-        try:
-            request.authorization.username = ""
-        except:
-            current_app.logger.error(
-                "Could not clear logged in user auth_method: {}".format(auth_method))
-
-    return {"response": response, "error": "", "info": ""}
+    return {"response": response,
+            "error": error,
+            "info": info,
+            "redirect": redirect,
+            "redirect_url": redirect_url}
 
 
 def custom_authmodule(route_func):
@@ -328,8 +329,8 @@ def custom_authmodule(route_func):
 
         # Check if we can reach the oauth_proxy
         try:
-            check_code = requests.get("http://{}:{}/healthz".format(
-                Config.OPENSHIFT_OAUTH_PROXY_ADDRESS, Config.OPENSHIFT_OAUTH_PROXY_PORT))
+            check_code = requests.get(
+                Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT)
         except:
             current_app.logger.error(
                 "Openshift Oauth-Proxy was selected but we could not reach proxy server at https://{}:{}".format(

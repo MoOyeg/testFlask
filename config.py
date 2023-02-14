@@ -46,7 +46,6 @@ class Config():
     SESSION_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_HTTPONLY = True
 
-    
     CLOUD_PROVIDER = os.environ.get('CLOUD_PROVIDER') or ""
     CLOUD_REGION = os.environ.get('CLOUD_REGION') or ""
     CLOUD_AVAILIBILITY_ZONE = os.environ.get('CLOUD_AVAILIBILITY_ZONE') or ""
@@ -69,9 +68,15 @@ class Config():
     AUTH_TYPE = os.environ.get('AUTH_TYPE') or ""
     OPENSHIFT_OAUTH_PROXY_ADDRESS = os.environ.get(
         'OPENSHIFT_OAUTH_PROXY_ADDRESS') or "localhost"
-    OPENSHIFT_OAUTH_PROXY_PORT = os.environ.get('OPENSHIFT_OAUTH_PROXY_PORT') or "8888"
-    OPENSHIFT_OAUTH_PROXY_COOKIE_NAME = os.environ.get('OPENSHIFT_OAUTH_PROXY_COOKIE_NAME') or "_oauth_proxy"
-    
+    OPENSHIFT_OAUTH_PROXY_PORT = os.environ.get(
+        'OPENSHIFT_OAUTH_PROXY_PORT') or "8888"
+    OPENSHIFT_OAUTH_PROXY_COOKIE_NAME = os.environ.get(
+        'OPENSHIFT_OAUTH_PROXY_COOKIE_NAME') or "_oauth_proxy"
+    OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT = "http://{}:{}/{}}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
+                                                                      (os.environ.get('OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT') or "oauth/healthz"))
+    OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT = "http://{}:{}/{}}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
+                                                                      (os.environ.get('OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT') or "oauth/sign_in"))
+
     # Generate URI from Parameters
     SQLALCHEMY_DATABASE_URI = create_uri(SQLALCHEMY_DATABASE_USERNAME, SQLALCHEMY_DATABASE_PASSWORD, SQLALCHEMY_DATABASE_HOST,
                                          SQLALCHEMY_DATABASE_DB)
