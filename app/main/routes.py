@@ -316,7 +316,7 @@ def custom_logoutmodule(user, response) -> dict:
         url_string = str(request.base_url).replace("logout", "")
         url_string = url_string.replace("https", "http")
         redirect_url = "{}{}".format(
-            str(request.base_url).replace("logout", ""), Config.OPENSHIFT_OAUTH_PROXY_SIGNIN)
+            url_string, Config.OPENSHIFT_OAUTH_PROXY_SIGNIN)
 
     return {"response": response,
             "error": error,
@@ -707,6 +707,8 @@ def logout(**kwargs):
     resp = make_response(render_template('logout.html'))
     updated_resp = custom_logoutmodule(kwargs["authenticated_user"], resp)
     if updated_resp["redirect"]:
+        current_app.logger.debug(
+            "Redirecting to url {} for logout".format(updated_resp["redirect_url"]))
         return redirect(updated_resp["redirect_url"])
     else:
         return updated_resp["response"]
