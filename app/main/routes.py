@@ -314,7 +314,7 @@ def custom_logoutmodule(user, response) -> dict:
     if auth_method == "openshift_oauth_proxy":
         redirect = True
         url_string = str(request.base_url).replace("logout", "")
-        url_string = url_string.replace("https", "http")
+        url_string = url_string.replace("http", "https")
         redirect_url = "{}{}".format(
             url_string, Config.OPENSHIFT_OAUTH_PROXY_SIGNIN)
 
