@@ -69,12 +69,16 @@ class Config():
         'OPENSHIFT_OAUTH_PROXY_ADDRESS') or "localhost"
     OPENSHIFT_OAUTH_PROXY_PORT = os.environ.get(
         'OPENSHIFT_OAUTH_PROXY_PORT') or "8888"
+    OPENSHIFT_OAUTH_PROXY_HEALTH = os.environ.get(
+        'OPENSHIFT_OAUTH_PROXY_HEALTH') or "oauth/healthz"
+    OPENSHIFT_OAUTH_PROXY_SIGNIN = os.environ.get(
+        'OPENSHIFT_OAUTH_PROXY_SIGNIN') or "oauth/sign_in"
     OPENSHIFT_OAUTH_PROXY_COOKIE_NAME = os.environ.get(
         'OPENSHIFT_OAUTH_PROXY_COOKIE_NAME') or "_oauth_proxy"
-    OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT = "http://{}:{}/{}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_PORT,
-                                                                     (os.environ.get('OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT') or "oauth/healthz"))
-    OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT = "http://{}:{}/{}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_PORT,
-                                                                     (os.environ.get('OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT') or "oauth/sign_in"))
+    OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT_URL = "http://{}:{}/{}".format(
+        OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_PORT, OPENSHIFT_OAUTH_PROXY_HEALTH)
+    OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT_URL = "http://{}:{}/{}".format(
+        OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_PORT, OPENSHIFT_OAUTH_PROXY_SIGNIN)
 
     # SQL URI from Parameters
     SQLALCHEMY_DATABASE_USERNAME = os.environ.get('MYSQL_USER') or ""

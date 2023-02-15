@@ -90,17 +90,24 @@ def delete_statement_count(user_id):
         return None
     return delete_count.count
 
+
 def sum_total_insert_statement_count():
-    sum = InsertCountMetric.query.with_entities(db.func.sum(InsertCountMetric.count).label('total')).first().total
+    sum = InsertCountMetric.query.with_entities(db.func.sum(
+        InsertCountMetric.count).label('total')).first().total
     return sum
+
 
 def sum_total_delete_statement_count():
-    sum = DeleteCountMetric.query.with_entities(db.func.sum(DeleteCountMetric.count).label('total')).first().total
+    sum = DeleteCountMetric.query.with_entities(db.func.sum(
+        DeleteCountMetric.count).label('total')).first().total
     return sum
 
+
 def sum_note_count():
-    sum = User.query.with_entities(db.func.sum(User.user_note_count).label('total')).first().total
+    sum = User.query.with_entities(db.func.sum(
+        User.user_note_count).label('total')).first().total
     return sum
+
 
 def note_count(user_id):
     '''Meant to return counts of user notes'''
@@ -189,6 +196,7 @@ def update_user_action_counter(user_id, action):
                 DeleteCountMetric(count=1, user_id=user_id))
         else:
             delete_counter.count = delete_counter.count + 1
+
 
 def notes_insert(user_id, **kwargs):
     """ Method to handle insertion into DB
@@ -305,7 +313,8 @@ def custom_logoutmodule(user, response) -> dict:
 
     if auth_method == "openshift_oauth_proxy":
         redirect = True
-        redirect_url = Config.OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT
+        redirect_url = "{}{}".format(
+            request.base_url, Config.OPENSHIFT_OAUTH_PROXY_SIGNIN)
 
     return {"response": response,
             "error": error,
@@ -340,10 +349,10 @@ def custom_authmodule(route_func):
         # Check if we can reach the oauth_proxy
         try:
             check_code = requests.get(
-                Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT)
+                Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT_URL)
         except:
             current_app.logger.error(
-                "Openshift Oauth-Proxy was selected but we could not reach proxy server at {}".format(Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT))
+                "Openshift Oauth-Proxy was selected but we could not reach proxy server at {}".format(Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT_URL))
             current_app.logger.error(
                 "We will Switch to using No Authentication")
             return no_authentication(*args, **kwargs)
@@ -581,6 +590,7 @@ def delete_note(**kwargs):
 
 #     return redirect('/notes')
 
+
 @bp.route('/metrics', methods=['GET'])
 @custom_authmodule
 def metrics(**kwargs):
@@ -600,7 +610,7 @@ def metrics(**kwargs):
             db_deletes = sum_total_delete_statement_count()
         except:
             pass
-    try:            
+    try:
         if counts is None:
             counts = 0
         if db_inserts is None:
@@ -617,7 +627,7 @@ def metrics(**kwargs):
     else:
         response = make_response(
             """Total Metrics for platform:\n Current Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
-            counts, db_inserts, db_deletes), 200)
+                counts, db_inserts, db_deletes), 200)
     response.content_type = "text/plain"
     return response
 
@@ -692,7 +702,6 @@ def logout(**kwargs):
     INDEX_CALLED = "false"
     INDEX_COUNT = 0
 
-    
     resp = make_response(render_template('logout.html'))
     updated_resp = custom_logoutmodule(kwargs["authenticated_user"], resp)
     if updated_resp["redirect"]:
