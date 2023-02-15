@@ -68,26 +68,5 @@
       </div>
       {% endfor %}
     </div>
-<!--   
-    <div class="table-responsive-md">
-        <table class="table table-hover">
-            <tr>
-                <th>Timestamp</th>
-                <th>Titles</th>
-                <th>Notes</th>
-                <th>Delete</th>
-            </tr>
-
-            {% for note in notes_list %}
-            <tr>
-                <td>{{ note.timestamp }}</td>
-                <td>{{ note.title }}</td>
-                <td>{{ note.note }}</td>
-                <td><a href={{url_for('main.delete_title')}}?id={{ note.id }}&user_id={{ user_id }}>Delete {{ note.title }}</a></td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
--->
 </div>
 {% endblock %}

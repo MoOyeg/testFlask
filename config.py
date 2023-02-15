@@ -41,11 +41,13 @@ def pullmetadata(hostname, metadata_port):
 
 class Config():
     '''Class to hold Class Variables for Flask Module'''
-    # Flask Specific Configuration
+    # Flask/PP Specific Configuration
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'L8QMIC'
+    SESSION_COOKIE_HEADER = os.environ.get('SESSION_COOKIE_HEADER') or 'moJrFe'
     SESSION_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_HTTPONLY = True
 
+#   Platform Information
     CLOUD_PROVIDER = os.environ.get('CLOUD_PROVIDER') or ""
     CLOUD_REGION = os.environ.get('CLOUD_REGION') or ""
     CLOUD_AVAILIBILITY_ZONE = os.environ.get('CLOUD_AVAILIBILITY_ZONE') or ""
@@ -53,31 +55,33 @@ class Config():
     METADATA_PORT = os.environ.get("METADATA_PORT") or "8080"
     KUBERNETES_DISTRIBUTION = os.environ.get('KUBERNETES_DISTRIBUTION') or ""
     KUBERNETES_VERSION = os.environ.get('KUBERNETES_VERSION') or ""
-
-    SESSION_COOKIE_HEADER = os.environ.get('SESSION_COOKIE_HEADER') or 'moJrFe'
-    SQLALCHEMY_DATABASE_USERNAME = os.environ.get('MYSQL_USER') or ""
-    SQLALCHEMY_DATABASE_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ""
-    SQLALCHEMY_DATABASE_HOST = os.environ.get('MYSQL_HOST') or ""
-    SQLALCHEMY_DATABASE_DB = os.environ.get('MYSQL_DATABASE') or ""
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
     KUBERNETES_SERVICE_PORT = os.environ.get('KUBERNETES_SERVICE_PORT') or ""
     DB_INIT = False
     GUNICORN_LOGGER = logging.getLogger('gunicorn.error') or "info"
+
     # Integration Parameters
     AUTH_INTEGRATION = os.environ.get('AUTH_INTEGRATION') or "False"
     AUTH_TYPE = os.environ.get('AUTH_TYPE') or ""
+    # Control which functions can be called without authentication
+    ANONYMOUS_ACCESS_FUNCTIONS = os.environ.get(
+        'ANONYMOUS_ACCESS_FUNCTIONS') or "ready health metrics"
     OPENSHIFT_OAUTH_PROXY_ADDRESS = os.environ.get(
         'OPENSHIFT_OAUTH_PROXY_ADDRESS') or "localhost"
     OPENSHIFT_OAUTH_PROXY_PORT = os.environ.get(
         'OPENSHIFT_OAUTH_PROXY_PORT') or "8888"
     OPENSHIFT_OAUTH_PROXY_COOKIE_NAME = os.environ.get(
         'OPENSHIFT_OAUTH_PROXY_COOKIE_NAME') or "_oauth_proxy"
-    OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT = "http://{}:{}/{}}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
-                                                                      (os.environ.get('OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT') or "oauth/healthz"))
-    OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT = "http://{}:{}/{}}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
-                                                                      (os.environ.get('OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT') or "oauth/sign_in"))
+    OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT = "http://{}:{}/{}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
+                                                                     (os.environ.get('OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT') or "oauth/healthz"))
+    OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT = "http://{}:{}/{}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
+                                                                     (os.environ.get('OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT') or "oauth/sign_in"))
 
-    # Generate URI from Parameters
+    # SQL URI from Parameters
+    SQLALCHEMY_DATABASE_USERNAME = os.environ.get('MYSQL_USER') or ""
+    SQLALCHEMY_DATABASE_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ""
+    SQLALCHEMY_DATABASE_HOST = os.environ.get('MYSQL_HOST') or ""
+    SQLALCHEMY_DATABASE_DB = os.environ.get('MYSQL_DATABASE') or ""
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = create_uri(SQLALCHEMY_DATABASE_USERNAME, SQLALCHEMY_DATABASE_PASSWORD, SQLALCHEMY_DATABASE_HOST,
                                          SQLALCHEMY_DATABASE_DB)
 

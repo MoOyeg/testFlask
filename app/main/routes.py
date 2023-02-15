@@ -33,7 +33,7 @@ READY_STATUS_OK = True
 # Duplicate Key in DB Error Message
 DUPLICATE_KEY_DB_MESSAGE = "Duplicate Key Error"
 # Functions we want access maybe without authentication
-ANONYMOUS_ACCESS_FUNCTIONS = ["__ready__"]
+ANONYMOUS_ACCESS_FUNCTIONS = ["ready"]
 INDEX_COUNT = 0
 INDEX_CALLED = "false"
 
@@ -90,6 +90,17 @@ def delete_statement_count(user_id):
         return None
     return delete_count.count
 
+def sum_total_insert_statement_count():
+    sum = InsertCountMetric.query.with_entities(db.func.sum(InsertCountMetric.count).label('total')).first().total
+    return sum
+
+def sum_total_delete_statement_count():
+    sum = DeleteCountMetric.query.with_entities(db.func.sum(DeleteCountMetric.count).label('total')).first().total
+    return sum
+
+def sum_note_count():
+    sum = User.query.with_entities(db.func.sum(User.user_note_count).label('total')).first().total
+    return sum
 
 def note_count(user_id):
     '''Meant to return counts of user notes'''
@@ -178,7 +189,6 @@ def update_user_action_counter(user_id, action):
                 DeleteCountMetric(count=1, user_id=user_id))
         else:
             delete_counter.count = delete_counter.count + 1
-
 
 def notes_insert(user_id, **kwargs):
     """ Method to handle insertion into DB
@@ -372,7 +382,7 @@ def custom_authmodule(route_func):
             "Anonymous access enabled for {}".format(route_func.__name__))
         return route_func(*args, **kwargs)
 
-    if route_func.__name__ in ANONYMOUS_ACCESS_FUNCTIONS:
+    if route_func.__name__ in Config.ANONYMOUS_ACCESS_FUNCTIONS:
         return anonymous_access
 
     if Config.AUTH_INTEGRATION.lower() == "false":
@@ -458,7 +468,7 @@ def notes(**kwargs):
                            configs=configs, notes_list=notes_list,
                            authenticated_user=authenticated_user,
                            user_id=authenticated_user.id,
-                           delete_url=url_for('main.delete_title'))
+                           delete_url=url_for('main.delete_note'))
 
 
 @bp.route('/insert', methods=['POST'])
@@ -534,9 +544,9 @@ def health_status(**kwargs):
                            health_url=healthdown_url, ready_url=readydown_url, ready=check_ready(), health=check_health(), authenticated_user=authenticated_user)
 
 
-@bp.route('/delete_title', methods=['GET', 'POST'])
+@bp.route('/delete_note', methods=['GET', 'POST'])
 @custom_authmodule
-def delete_title(**kwargs):
+def delete_note(**kwargs):
     '''Method to remove key from DB'''
 
     authenticated_user = kwargs["authenticated_user"]
@@ -546,9 +556,31 @@ def delete_title(**kwargs):
     except KeyError:
         current_app.logger.debug("Could not get values for deletion")
 
-    notes_delete(user_remove, value_remove)
+    try:
+        notes_delete(user_remove, value_remove)
+    except:
+        pass
+
     return redirect('/notes')
 
+# @bp.route('/get_note', methods=['GET', 'POST'])
+# @custom_authmodule
+# def get_note(**kwargs):
+#     '''Get a note via api'''
+
+#     authenticated_user = kwargs["authenticated_user"]
+#     try:
+#         note_id = request.args.get("id")
+#         user_id = request.args.get("user_id")
+#     except KeyError:
+#         current_app.logger.debug("Could not get values for note")
+
+#     try:
+#         notes_read(user_id, note_id)
+#     except:
+#         pass
+
+#     return redirect('/notes')
 
 @bp.route('/metrics', methods=['GET'])
 @custom_authmodule
@@ -557,22 +589,36 @@ def metrics(**kwargs):
 
     current_app.logger.info("Metric URL Was Called")
     # Provide Some Metrics to External Platforms
-    authenticated_user = kwargs["authenticated_user"]
+    if "authenticated_user" in kwargs:
+        authenticated_user = kwargs["authenticated_user"]
+        counts = note_count(authenticated_user.id)
+        db_inserts = insert_statement_count(authenticated_user.id)
+        db_deletes = delete_statement_count(authenticated_user.id)
+    else:
+        try:
+            counts = sum_note_count()
+            db_inserts = sum_total_insert_statement_count()
+            db_deletes = sum_total_delete_statement_count()
+        except:
+            pass
+    try:            
+        if counts is None:
+            counts = 0
+        if db_inserts is None:
+            db_inserts = 0
+        if db_deletes is None:
+            db_deletes = 0
+    except:
+        pass
 
-    counts = note_count(authenticated_user.id)
-    if counts is None:
-        counts = 0
-
-    db_inserts = insert_statement_count(authenticated_user.id)
-    if db_inserts is None:
-        db_inserts = 0
-
-    db_deletes = delete_statement_count(authenticated_user.id)
-    if db_deletes is None:
-        db_deletes = 0
-    response = make_response(
-        """Current Metrics for user: {}\nCurrent Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
-            get_user_username(authenticated_user.id), counts, db_inserts, db_deletes), 200)
+    if "authenticated_user" in kwargs:
+        response = make_response(
+            """Current Metrics for user: {}\nCurrent Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
+                get_user_username(authenticated_user.id), counts, db_inserts, db_deletes), 200)
+    else:
+        response = make_response(
+            """Total Metrics for platform:\n Current Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
+            counts, db_inserts, db_deletes), 200)
     response.content_type = "text/plain"
     return response
 
