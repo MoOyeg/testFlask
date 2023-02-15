@@ -298,7 +298,7 @@ def custom_logoutmodule(user, response) -> dict:
     redirect_url = ""
 
     try:
-        auth_method = user.id
+        auth_method = user.auth_method
     except:
         current_app.logger.error(
             "Could not get error when trying to logout User")
