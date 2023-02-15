@@ -297,8 +297,24 @@ def create_user(firstname, **kwargs) -> User:
     return created_user
 
 
+def custom_redirect(user, endpoint):
+    '''Function to help change redirection behaviour if required'''
+    redirect_url = url_for(endpoint)
+
+    try:
+        auth_method = user.auth_method
+    except:
+        current_app.logger.error(
+            "Could not get error when trying to redirect for User")
+
+    if auth_method == "openshift_oauth_proxy":
+        redirect_url = redirect_url.replace("http", "https")
+
+    return redirect(redirect_url)
+
+
 def custom_logoutmodule(user, response) -> dict:
-    '''Enables logout based on user auth_method specificed'''
+    '''Enables logout based on user auth_method'''
     response = response
     error = ""
     info = ""
@@ -364,11 +380,11 @@ def custom_authmodule(route_func):
 
         # Check if user already logged and if not redirect back to fullurl where proxy should be listening
         try:
-            fullurl = request.base_url
+            fullurl = str(request.base_url).replace("http", "https")
             if request.authorization.username is None:
                 return redirect(fullurl)
         except AttributeError:
-            fullurl = request.base_url
+            fullurl = str(request.base_url).replace("http", "https")
             return redirect(fullurl)
 
         authenticated_username = request.authorization.username
@@ -536,7 +552,6 @@ def configuration(**kwargs):
 @custom_authmodule
 def health_status(**kwargs):
     '''Web Page for Health Route'''
-    form = PostForm()
     fullurl = ""
     configs = myclassvariables()
     fullurl = request.base_url
@@ -550,8 +565,7 @@ def health_status(**kwargs):
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
 
-    return render_template('health_status.html', form=form, configs=configs,
-                           health_url=healthdown_url, ready_url=readydown_url, ready=check_ready(), health=check_health(), authenticated_user=authenticated_user)
+    return render_template('health_status.html', health_url=healthdown_url, ready_url=readydown_url, ready=check_ready(), health=check_health(), authenticated_user=authenticated_user)
 
 
 @bp.route('/delete_note', methods=['GET', 'POST'])
@@ -571,7 +585,7 @@ def delete_note(**kwargs):
     except:
         pass
 
-    return redirect('/notes')
+    return custom_redirect(authenticated_user, "main.notes")
 
 # @bp.route('/get_note', methods=['GET', 'POST'])
 # @custom_authmodule
