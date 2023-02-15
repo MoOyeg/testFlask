@@ -71,9 +71,9 @@ class Config():
         'OPENSHIFT_OAUTH_PROXY_PORT') or "8888"
     OPENSHIFT_OAUTH_PROXY_COOKIE_NAME = os.environ.get(
         'OPENSHIFT_OAUTH_PROXY_COOKIE_NAME') or "_oauth_proxy"
-    OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT = "http://{}:{}/{}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
+    OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT = "https://{}:{}/{}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
                                                                      (os.environ.get('OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT') or "oauth/healthz"))
-    OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT = "http://{}:{}/{}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
+    OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT = "https://{}:{}/{}".format(OPENSHIFT_OAUTH_PROXY_ADDRESS, OPENSHIFT_OAUTH_PROXY_ADDRESS,
                                                                      (os.environ.get('OPENSHIFT_OAUTH_PROXY_SIGNIN_ENDPOINT') or "oauth/sign_in"))
 
     # SQL URI from Parameters

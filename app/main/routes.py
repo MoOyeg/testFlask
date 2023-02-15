@@ -343,8 +343,7 @@ def custom_authmodule(route_func):
                 Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT)
         except:
             current_app.logger.error(
-                "Openshift Oauth-Proxy was selected but we could not reach proxy server at https://{}:{}".format(
-                    Config.OPENSHIFT_OAUTH_PROXY_ADDRESS, Config.OPENSHIFT_OAUTH_PROXY_PORT))
+                "Openshift Oauth-Proxy was selected but we could not reach proxy server at {}".format(Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT)))
             current_app.logger.error(
                 "We will Switch to using No Authentication")
             return no_authentication(*args, **kwargs)
