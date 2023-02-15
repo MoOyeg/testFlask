@@ -692,9 +692,13 @@ def logout(**kwargs):
     INDEX_CALLED = "false"
     INDEX_COUNT = 0
 
+    
     resp = make_response(render_template('logout.html'))
     updated_resp = custom_logoutmodule(kwargs["authenticated_user"], resp)
-    return updated_resp["response"]
+    if updated_resp["redirect"]:
+        return redirect(updated_resp["redirect_url"])
+    else:
+        return updated_resp["response"]
 
 
 @bp.route('/error-not-authenticated', methods=['GET'])
