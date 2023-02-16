@@ -308,6 +308,8 @@ def custom_redirect(user, endpoint):
             "Could not get error when trying to redirect for User")
 
     if auth_method == "openshift_oauth_proxy":
+        current_app.logger.debug(
+            "Changing redirect from http to https due to oauth_proxy")
         redirect_url = redirect_url.replace("http", "https")
 
     return redirect(redirect_url)
