@@ -299,7 +299,7 @@ def create_user(firstname, **kwargs) -> User:
 
 def custom_redirect(user, endpoint):
     '''Function to help change redirection behaviour if required'''
-    redirect_url = url_for(endpoint)
+    redirect_url = endpoint
 
     try:
         auth_method = user.auth_method
