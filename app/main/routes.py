@@ -588,7 +588,7 @@ def delete_note(**kwargs):
     except:
         pass
 
-    return custom_redirect(authenticated_user, "main.notes")
+    return custom_redirect(authenticated_user, "/notes")
 
 # @bp.route('/get_note', methods=['GET', 'POST'])
 # @custom_authmodule
