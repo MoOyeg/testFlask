@@ -312,7 +312,6 @@ def custom_redirect(user, endpoint):
             "Changing redirect from http to https due to oauth_proxy")
         redirect_url = str(request.base_url).replace("http", "https")
         redirect_url = redirect_url.replace(request.endpoint, endpoint)
-
     return redirect(redirect_url)
 
 
@@ -588,7 +587,7 @@ def delete_note(**kwargs):
     except:
         pass
 
-    return custom_redirect(authenticated_user, "/notes")
+    return custom_redirect(authenticated_user, "main.notes")
 
 # @bp.route('/get_note', methods=['GET', 'POST'])
 # @custom_authmodule
