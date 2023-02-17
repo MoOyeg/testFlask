@@ -299,7 +299,7 @@ def create_user(firstname, **kwargs) -> User:
 
 def custom_redirect(user, endpoint):
     '''Function to help change redirection behaviour if required'''
-    redirect_url = endpoint
+    redirect_url = url_for(endpoint)
 
     try:
         auth_method = user.auth_method
@@ -310,9 +310,8 @@ def custom_redirect(user, endpoint):
     if auth_method == "openshift_oauth_proxy":
         current_app.logger.debug(
             "Changing redirect from http to https due to oauth_proxy")
-        redirect_url = url_for(endpoint)
-        redirect_url = str(request.base_url).replace("http", "https")
-        
+        redirect_url = "{}{}".format(request.host_url[:-1],redirect_url)
+        redirect_url = redirect_url.replace("http", "https")        
     return redirect(redirect_url)
 
 
@@ -587,8 +586,7 @@ def delete_note(**kwargs):
         notes_delete(user_remove, value_remove)
     except:
         pass
-
-    return custom_redirect(authenticated_user, "main.notes")
+    return custom_redirect(authenticated_user, ".notes")
 
 # @bp.route('/get_note', methods=['GET', 'POST'])
 # @custom_authmodule
