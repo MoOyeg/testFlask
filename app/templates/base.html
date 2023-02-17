@@ -89,10 +89,38 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
                 {% if authenticated_user is defined %}
-                <a class="nav-link" href="#!">{{ authenticated_user.username }}</a>
+                <li class="nav-item dropdown">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    id="navbarDropdown"
+                    href="#"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    >{{ authenticated_user.username }}</a
+                  >
+                  <div
+                    class="dropdown-menu dropdown-menu-end"
+                    aria-labelledby="navbarDropdown"
+                  >
+                    <a
+                      class="dropdown-item"
+                      href="{{url_for('main.profile')}}"
+                      >Your Profile</a
+                    >
+                    <div class="dropdown-divider"></div>
+                    <a
+                      class="dropdown-item"
+                      href="{{url_for('main.logout')}}?user_id={{ authenticated_user.id }}"
+                      >Log Out</a
+                    >
+                    <!-- <div class="dropdown-divider"></div> -->
+                  </div>
+                </li>
                 {% else %}
                 <li class="nav-item">
-                  <a class="nav-link" href="#!">Log In</a>
+                  <a class="nav-link" href="{{url_for('main.index')}}">Log In</a>
                 </li>
                 {% endif %}
                 <li class="nav-item dropdown">
@@ -125,7 +153,7 @@
                       href="https://developers.redhat.com/developer-sandbox"
                       >Openshift Developer Sandbox</a
                     >
-                    <div class="dropdown-divider"></div>
+                    <!--<div class="dropdown-divider"></div> -->
                   </div>
                 </li>
               </ul>

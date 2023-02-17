@@ -11,7 +11,7 @@
 {{ super() }}
           <!--Jquery JS-->      
 <!-- <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script> -->
-<script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}"></script>
+<!-- <script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}"></script> -->
 <script src="{{url_for('static', filename='js/misc.js')}}"></script>
 <div class="container-fluid">
     <h1 class="mt-4">Notes</h1>
@@ -63,33 +63,10 @@
         </div>
         <div class="card-footer">
           <button type="button" onclick='editNoteFunction("{{ note.title }}","{{ note.note }}")' id=button-edit-{{ note.title }}-{{ user_id }} class="btn btn-success" width="20" height="10">Edit</button>
-          <button type="button" onclick='deleteNoteFunction("{{url_for('main.delete_title')}}","{{ note.id }}","{{ user_id }}")' id=button-delete-{{ note.title }}-{{ user_id }} class="btn btn btn-danger" width="20" height="10">Delete</button>
+          <button type="button" onclick='deleteNoteFunction("{{ delete_url }}","{{ note.id }}","{{ user_id }}")' id=button-delete-{{ note.title }}-{{ user_id }} class="btn btn btn-danger" width="20" height="10">Delete</button>
         </div>           
       </div>
       {% endfor %}
     </div>
-<!--   
-    <div class="table-responsive-md">
-        <table class="table table-hover">
-            <tr>
-                <th>Timestamp</th>
-                <th>Titles</th>
-                <th>Notes</th>
-                <th>Delete</th>
-            </tr>
-
-            {% for note in notes_list %}
-            <tr>
-                <td>{{ note.timestamp }}</td>
-                <td>{{ note.title }}</td>
-                <td>{{ note.note }}</td>
-                <td><a href={{url_for('main.delete_title')}}?id={{ note.id }}&user_id={{ user_id }}>Delete {{ note.title }}</a></td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
--->
 </div>
 {% endblock %}
-
-</html>

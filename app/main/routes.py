@@ -20,7 +20,7 @@ from app.main.forms import PostForm
 from app.errors import ValidationError
 from app.models import User, Note, InsertCountMetric, DeleteCountMetric
 from config import Config
-
+import requests
 import sys
 from config import myclassvariables
 from random import randrange
@@ -32,6 +32,10 @@ HEALTH_STATUS_OK = True
 READY_STATUS_OK = True
 # Duplicate Key in DB Error Message
 DUPLICATE_KEY_DB_MESSAGE = "Duplicate Key Error"
+# Functions we want access maybe without authentication
+ANONYMOUS_ACCESS_FUNCTIONS = ["ready"]
+INDEX_COUNT = 0
+INDEX_CALLED = "false"
 
 
 def check_health():
@@ -87,6 +91,24 @@ def delete_statement_count(user_id):
     return delete_count.count
 
 
+def sum_total_insert_statement_count():
+    sum = InsertCountMetric.query.with_entities(db.func.sum(
+        InsertCountMetric.count).label('total')).first().total
+    return sum
+
+
+def sum_total_delete_statement_count():
+    sum = DeleteCountMetric.query.with_entities(db.func.sum(
+        DeleteCountMetric.count).label('total')).first().total
+    return sum
+
+
+def sum_note_count():
+    sum = User.query.with_entities(db.func.sum(
+        User.user_note_count).label('total')).first().total
+    return sum
+
+
 def note_count(user_id):
     '''Meant to return counts of user notes'''
     user = User.query.filter_by(id=user_id).first()
@@ -117,6 +139,7 @@ def refresh_notes_view(url, user_id) -> list:
         refresh_db_count += 1
     return [refresh_db_note, refresh_db_time, refresh_db_remove, refresh_db_count]
 
+
 def get_user(user_id, **kwargs) -> User:
     '''Method is to Get User Information'''
     user = User.query.filter_by(id=user_id).first()
@@ -126,17 +149,20 @@ def get_user(user_id, **kwargs) -> User:
 
 
 def get_user_username(user_id, **kwargs) -> str:
-    '''Method is to Get UserName'''   
+    '''Method is to Get UserName'''
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return None
     return user.username
 
-def get_user_by_authmethod(auth_method,username) -> User:
-    user = User.query.filter_by(username=username, auth_method=auth_method).first()
+
+def get_user_by_authmethod(auth_method, username) -> User:
+    user = User.query.filter_by(
+        username=username, auth_method=auth_method).first()
     if user is None:
         return None
     return user
+
 
 def check_db_init():
     '''Make Sure DB is Initialized with Our Tables before we start'''
@@ -233,27 +259,29 @@ def create_user(firstname, **kwargs) -> User:
     '''Method is Used to Create a User in The DB'''
     current_app.logger.debug("User Creation Method Called")
 
-    #Generate Username if not Provided
+    # Generate Username if not Provided
     if "username" not in kwargs:
         username = "{}{}".format(firstname, randrange(0, 100))
     else:
         username = kwargs["username"]
 
-    #Set auth_method if not provided
+    # Set auth_method if not provided
     if "auth_method" not in kwargs:
         auth_method = "no_authentication"
     else:
         auth_method = kwargs["auth_method"]
 
     # Check if User Already Exists
-    user = User.query.filter_by(username=username, auth_method=auth_method).first()
+    user = User.query.filter_by(
+        username=username, auth_method=auth_method).first()
     if user is None:
         if "id" in kwargs:
             # Try to set ID if provided
             db.session.add(
                 User(firstname=firstname, username=username, auth_method=auth_method, id=kwargs["id"]))
         else:
-            db.session.add(User(firstname=firstname, username=username, auth_method=auth_method))
+            db.session.add(
+                User(firstname=firstname, username=username, auth_method=auth_method))
     else:
         current_app.logger.debug(
             "User with Username {} already exists, will skip creation".format("username"))
@@ -264,8 +292,56 @@ def create_user(firstname, **kwargs) -> User:
         current_app.logger.error("{}".format(error))
         return None
 
-    created_user = User.query.filter_by(username=username,auth_method=auth_method).first()
+    created_user = User.query.filter_by(
+        username=username, auth_method=auth_method).first()
     return created_user
+
+
+def custom_redirect(user, endpoint):
+    '''Function to help change redirection behaviour if required'''
+    redirect_url = url_for(endpoint)
+
+    try:
+        auth_method = user.auth_method
+    except:
+        current_app.logger.error(
+            "Could not get error when trying to redirect for User")
+
+    if auth_method == "openshift_oauth_proxy":
+        current_app.logger.debug(
+            "Changing redirect from http to https due to oauth_proxy")
+        redirect_url = "{}{}".format(request.host_url[:-1],redirect_url)
+        redirect_url = redirect_url.replace("http", "https")        
+    return redirect(redirect_url)
+
+
+def custom_logoutmodule(user, response) -> dict:
+    '''Enables logout based on user auth_method'''
+    response = response
+    error = ""
+    info = ""
+    redirect = False
+    redirect_url = ""
+
+    try:
+        auth_method = user.auth_method
+    except:
+        current_app.logger.error(
+            "Could not get error when trying to logout User")
+
+    if auth_method == "openshift_oauth_proxy":
+        redirect = True
+        url_string = str(request.base_url).replace("logout", "")
+        url_string = url_string.replace("http", "https")
+        redirect_url = "{}{}".format(
+            url_string, Config.OPENSHIFT_OAUTH_PROXY_SIGNIN)
+
+    return {"response": response,
+            "error": error,
+            "info": info,
+            "redirect": redirect,
+            "redirect_url": redirect_url}
+
 
 def custom_authmodule(route_func):
     '''Module is a method we use to simulate different kinds of authentication options'''
@@ -275,45 +351,75 @@ def custom_authmodule(route_func):
         '''Module assumes no authentication is in use'''
         check_db_init()
         # Check if user exists
-        user = get_user_by_authmethod("no_authentication","Administrator")
+        user = get_user_by_authmethod("no_authentication", "Administrator")
         if user is None:
             current_app.logger.error(
                 "Application is working with no Authentication, Will create a default Administrator user")
             user = create_user(firstname="Administrator",
-                                    id=1, username="Administrator", auth_method="no_authentication")
-        user = get_user_by_authmethod("no_authentication","Administrator")
+                               id=1, username="Administrator", auth_method="no_authentication")
+        user = get_user_by_authmethod("no_authentication", "Administrator")
         kwargs["authenticated_user"] = user
-        kwargs["authenticated"] = True       
+        kwargs["authenticated"] = True
         return route_func(*args, **kwargs)
 
     @wraps(route_func)
     def openshift_oauth_proxy(*args, **kwargs):
         '''Oauth Authentication using OpenShift's integrated Oauth Proxy - https://github.com/MoOyeg/testFlask-Oauth-Proxy'''
-        check_db_init()
-        # Check if user already logged in
-        try:
-            fullurl = request.base_url
-            if request.authorization.username is None:
-                    return redirect(fullurl)
-        except AttributeError:
-                    fullurl = request.base_url
-                    return redirect(fullurl)
 
-        authenticated_username=request.authorization.username
-        auth_method="openshift_oauth_proxy"
+        # Check if we can reach the oauth_proxy
+        try:
+            check_code = requests.get(
+                Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT_URL)
+        except:
+            current_app.logger.error(
+                "Openshift Oauth-Proxy was selected but we could not reach proxy server at {}".format(Config.OPENSHIFT_OAUTH_PROXY_HEALTH_ENDPOINT_URL))
+            current_app.logger.error(
+                "We will Switch to using No Authentication")
+            return no_authentication(*args, **kwargs)
+
+        # Check if DB is initalized
+        check_db_init()
+
+        # Check if user already logged and if not redirect back to fullurl where proxy should be listening
+        try:
+            fullurl = str(request.base_url).replace("http", "https")
+            if request.authorization.username is None:
+                return redirect(fullurl)
+        except AttributeError:
+            fullurl = str(request.base_url).replace("http", "https")
+            return redirect(fullurl)
+
+        authenticated_username = request.authorization.username
+        auth_method = "openshift_oauth_proxy"
 
         # Check if user already exists
-        if get_user_by_authmethod(username=authenticated_username,auth_method=auth_method) is None:
-            create_user(authenticated_username,username=authenticated_username,auth_method=auth_method)
-        
-        #Get User Information
-        User = get_user_by_authmethod(username=authenticated_username,auth_method=auth_method)
+        if get_user_by_authmethod(username=authenticated_username, auth_method=auth_method) is None:
+            create_user(authenticated_username,
+                        username=authenticated_username, auth_method=auth_method)
+
+        # Get User Information
+        User = get_user_by_authmethod(
+            username=authenticated_username, auth_method=auth_method)
         kwargs["authenticated_user"] = User
         kwargs["authenticated"] = True
-
         return route_func(*args, **kwargs)
 
+    @wraps(route_func)
+    def anonymous_access(*args, **kwargs):
+        current_app.logger.debug(
+            "Anonymous access enabled for {}".format(route_func.__name__))
+        return route_func(*args, **kwargs)
+
+    if route_func.__name__ in Config.ANONYMOUS_ACCESS_FUNCTIONS:
+        return anonymous_access
+
     if Config.AUTH_INTEGRATION.lower() == "false":
+        return no_authentication
+
+    if Config.AUTH_TYPE.lower() == "openshift_oauth_proxy":
+        return openshift_oauth_proxy
+
+    if Config.AUTH_TYPE.lower() == "":
         return no_authentication
 
     if Config.AUTH_TYPE.lower() == "openshift_oauth_proxy":
@@ -334,9 +440,14 @@ def base():
 @custom_authmodule
 def index(**kwargs):
     '''Starting Index Page'''
+    global INDEX_CALLED
+    global INDEX_COUNT
+
     PostForm()
     fullurl = ""
-    
+    INDEX_COUNT += 1
+    if INDEX_COUNT > 1:
+        INDEX_CALLED = "true"
     try:
         if not kwargs["authenticated_user"]:
             return redirect('/error-not-authenticated')
@@ -354,7 +465,7 @@ def index(**kwargs):
         healthdown_url = "{}{}".format(healthdown_url, "health_down")
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
-    return render_template('index.html',authenticated_user=authenticated_user)
+    return render_template('index.html', authenticated_user=authenticated_user, new_session=INDEX_CALLED)
 
 
 @bp.route('/notes', methods=['GET', 'POST'])
@@ -386,7 +497,11 @@ def notes(**kwargs):
         # return render_template('notes.html', form=form, configs=configs, notes_list=notes_list)
 
     notes_list = note_read(authenticated_user.id)
-    return render_template('notes.html', postform=form, configs=configs, notes_list=notes_list, authenticated_user=authenticated_user,user_id=authenticated_user.id)
+    return render_template('notes.html', postform=form,
+                           configs=configs, notes_list=notes_list,
+                           authenticated_user=authenticated_user,
+                           user_id=authenticated_user.id,
+                           delete_url=url_for('main.delete_note'))
 
 
 @bp.route('/insert', methods=['POST'])
@@ -427,7 +542,7 @@ def profile(**kwargs):
         username = None
         firstname = None
         lastname = None
-    return render_template('profile.html', username=username, firstname=firstname, lastname=lastname,authenticated_user=authenticated_user)
+    return render_template('profile.html', username=username, firstname=firstname, lastname=lastname, authenticated_user=authenticated_user)
 
 
 @bp.route('/configuration', methods=['GET'])
@@ -437,14 +552,13 @@ def configuration(**kwargs):
     current_app.logger.debug("Obtain Application Configuration")
     authenticated_user = kwargs["authenticated_user"]
     configs = myclassvariables()
-    return render_template('configuration.html', configs=configs,authenticated_user=authenticated_user)
+    return render_template('configuration.html', configs=configs, authenticated_user=authenticated_user)
 
 
 @bp.route('/health_status', methods=['GET', 'POST'])
 @custom_authmodule
 def health_status(**kwargs):
     '''Web Page for Health Route'''
-    form = PostForm()
     fullurl = ""
     configs = myclassvariables()
     fullurl = request.base_url
@@ -458,13 +572,12 @@ def health_status(**kwargs):
     if "ready_down" not in readydown_url:
         readydown_url = "{}{}".format(readydown_url, "ready_down")
 
-    return render_template('health_status.html', form=form, configs=configs,
-                                  health_url=healthdown_url, ready_url=readydown_url, ready=check_ready(), health=check_health(),authenticated_user=authenticated_user)
+    return render_template('health_status.html', health_url=healthdown_url, ready_url=readydown_url, ready=check_ready(), health=check_health(), authenticated_user=authenticated_user)
 
 
-@bp.route('/delete_title', methods=['GET', 'POST'])
+@bp.route('/delete_note', methods=['GET', 'POST'])
 @custom_authmodule
-def delete_title(**kwargs):
+def delete_note(**kwargs):
     '''Method to remove key from DB'''
 
     authenticated_user = kwargs["authenticated_user"]
@@ -474,8 +587,30 @@ def delete_title(**kwargs):
     except KeyError:
         current_app.logger.debug("Could not get values for deletion")
 
-    notes_delete(user_remove, value_remove)
-    return redirect('/notes')
+    try:
+        notes_delete(user_remove, value_remove)
+    except:
+        pass
+    return custom_redirect(authenticated_user, ".notes")
+
+# @bp.route('/get_note', methods=['GET', 'POST'])
+# @custom_authmodule
+# def get_note(**kwargs):
+#     '''Get a note via api'''
+
+#     authenticated_user = kwargs["authenticated_user"]
+#     try:
+#         note_id = request.args.get("id")
+#         user_id = request.args.get("user_id")
+#     except KeyError:
+#         current_app.logger.debug("Could not get values for note")
+
+#     try:
+#         notes_read(user_id, note_id)
+#     except:
+#         pass
+
+#     return redirect('/notes')
 
 
 @bp.route('/metrics', methods=['GET'])
@@ -485,22 +620,36 @@ def metrics(**kwargs):
 
     current_app.logger.info("Metric URL Was Called")
     # Provide Some Metrics to External Platforms
-    authenticated_user = kwargs["authenticated_user"]
+    if "authenticated_user" in kwargs:
+        authenticated_user = kwargs["authenticated_user"]
+        counts = note_count(authenticated_user.id)
+        db_inserts = insert_statement_count(authenticated_user.id)
+        db_deletes = delete_statement_count(authenticated_user.id)
+    else:
+        try:
+            counts = sum_note_count()
+            db_inserts = sum_total_insert_statement_count()
+            db_deletes = sum_total_delete_statement_count()
+        except:
+            pass
+    try:
+        if counts is None:
+            counts = 0
+        if db_inserts is None:
+            db_inserts = 0
+        if db_deletes is None:
+            db_deletes = 0
+    except:
+        pass
 
-    counts = note_count(authenticated_user.id)
-    if counts is None:
-        counts = 0
-
-    db_inserts = insert_statement_count(authenticated_user.id)
-    if db_inserts is None:
-        db_inserts = 0
-
-    db_deletes = delete_statement_count(authenticated_user.id)
-    if db_deletes is None:
-        db_deletes = 0
-    response = make_response(
-        """Current Metrics for user: {}\nCurrent Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
-            get_user_username(authenticated_user.id), counts, db_inserts, db_deletes), 200)
+    if "authenticated_user" in kwargs:
+        response = make_response(
+            """Current Metrics for user: {}\nCurrent Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
+                get_user_username(authenticated_user.id), counts, db_inserts, db_deletes), 200)
+    else:
+        response = make_response(
+            """Total Metrics for platform:\n Current Notes {}\nTotal_Insert_Statements {}\nTotal_Remove_Statements {}\n""".format(
+                counts, db_inserts, db_deletes), 200)
     response.content_type = "text/plain"
     return response
 
@@ -547,6 +696,42 @@ def ready_down(**kwargs):
     else:
         READY_STATUS_OK = True
     return redirect('/health_status')
+
+
+@bp.route('/logout', methods=['GET'])
+@custom_authmodule
+def logout(**kwargs):
+    global INDEX_CALLED
+    global INDEX_COUNT
+
+    try:
+        if not kwargs["authenticated_user"]:
+            return redirect('/error-not-authenticated')
+        user = kwargs["authenticated_user"]
+    except KeyError:
+        return redirect('/error-not-authenticated')
+
+    try:
+        user_id = request.args.get("user_id")
+    except KeyError:
+        return redirect('/error-not-authenticated')
+
+    if str(user_id) != str(user.id):
+        current_app.logger.debug(
+            "User ID Provided did not match authenticated user ID")
+        return redirect('/error-not-authenticated')
+
+    INDEX_CALLED = "false"
+    INDEX_COUNT = 0
+
+    resp = make_response(render_template('logout.html'))
+    updated_resp = custom_logoutmodule(kwargs["authenticated_user"], resp)
+    if updated_resp["redirect"]:
+        current_app.logger.debug(
+            "Redirecting to url {} for logout".format(updated_resp["redirect_url"]))
+        return redirect(updated_resp["redirect_url"])
+    else:
+        return updated_resp["response"]
 
 
 @bp.route('/error-not-authenticated', methods=['GET'])
