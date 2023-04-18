@@ -1,0 +1,52 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"mysql:8.0-el8","namespace":"openshift"},"fieldPath":"spec.template.spec.containers[?(@.name==\"mysql\")].image"}]
+  name: mysql
+  namespace: apptest
+  labels:
+    app: testflask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testflask
+      deployment: mysql
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: testflask
+        deployment: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0-el8
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          env:
+            - name: MYSQL_DATABASE
+              value: testdb
+            - name: MYSQL_PASSWORD
+              value: "pass"
+            - name: MYSQL_USER
+              value: "user"
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

@@ -2,12 +2,27 @@
 Script provides misc functionality on webpage
 */
 
+$(document).ready(function(){
+
+  // jQuery methods go here...
+  $("#add_new_note_toggle").click(clearInputFormValues);
+  $("#add_new_note_toggle").click(test);
+
+  function test() {
+    console.log("testing");
+  }
+
+  
+});
+
+
 window.addEventListener('DOMContentLoaded', event => {
 const submit_btn_element = document.getElementById("add_new_note_toggle");
-submit_btn_element.addEventListener("click", clearInputFormValues);
+//submit_btn_element.addEventListener("click", clearInputFormValues);
 // var myCollapsible = document.getElementById('collapseView')
 // myCollapsible.addEventListener('show.bs.collapse', clearInputValues)
 });
+
 
 function clearInputFormValues() {
   document.getElementById("note_forms_title_inputarea").value = "";

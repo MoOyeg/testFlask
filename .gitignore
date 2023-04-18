@@ -305,3 +305,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 _requirements.txt
+.odo
