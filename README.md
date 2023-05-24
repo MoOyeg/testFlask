@@ -88,6 +88,9 @@ Create Secret in OpenShift for Private/Cluster, example is for github ssh key
 
   - Example of creating application from Public Repo using the Dockerfile to build(Docker Strategy)  
     ```bash
+    oc tag --source=docker registry.redhat.io/ubi8/ubi:latest ubi8:latest -n openshift
+    ```
+    ```bash
     oc new-app https://github.com/MoOyeg/testFlask.git --name=$APP_NAME -l app=testflask --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV --strategy=docker
     ```
   
