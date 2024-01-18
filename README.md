@@ -78,7 +78,7 @@ Create Secret in OpenShift for Private/Cluster, example is for github ssh key
 
   - Example of creating application from a Private Repo with Source Secret(s2i Building)
     ```bash
-    oc new-app python:3.8~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret$REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=./gunicorn/gunicorn.conf.py --env=APP_MODULE=runapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV
+    oc new-app python:3.8~git@github.com:MoOyeg/testFlask.git --name=$APP_NAME --source-secret $REPO_SECRET_NAME -l app=testflask --strategy=source  --env=APP_CONFIG=./gunicorn/gunicorn.conf.py --env=APP_MODULE=runapp:app --env=MYSQL_HOST=$MYSQL_HOST --env=MYSQL_DATABASE=$MYSQL_DATABASE -n $NAMESPACE_DEV
     ```
 
   - Example of creating application from Public Repo without Source Secret(s2i Building)  
