@@ -32,28 +32,27 @@ commands:
     group:
       kind: build
     workingDir: ${PROJECT_SOURCE}   
-- id: debug-setup
-  composite:
-    commands:
-      - install-python-requirements
-    group:
-      kind: build
-      isDefault: true
-    parallel: true
-- id: run-application-via-entry-script
+# - id: debug-setup
+#   composite:
+#     commands:
+#       - install-python-requirements
+#     group:
+#       kind: build
+#       isDefault: true
+# #     parallel: true
+# - id: run-application-via-entry-script
+#   exec:
+#     commandLine: /bin/bash -c "./runapp.sh"
+#     #commandLine: echo "here22" && sleep infinity
+#     hotReloadCapable: true
+#     component: python-39
+#     group:
+#       kind: run
+#       isDefault: true
+#     workingDir: ${PROJECT_SOURCE}
+- id: debug
   exec:
-    #commandLine: /bin/bash -c "./runapp.sh"
-    commandLine: echo "here22" && sleep infinity
-    hotReloadCapable: true
-    component: python-39
-    group:
-      kind: run
-      isDefault: true
-    workingDir: ${PROJECT_SOURCE}
-- id: debug-application-via-entry-script
-  exec:
-    #commandLine: python -m debugpy --listen 0.0.0.0:${DEBUG_PORT} runapp.py
-    commandLine: echo "here" && sleep infinity
+    commandLine: python -m debugpy --listen 0.0.0.0:${DEBUG_PORT} runapp.py
     component: python-39
     hotReloadCapable: true
     group:
@@ -68,11 +67,12 @@ components:
     - -f
     - /dev/null
     endpoints:
-    - name: http-python
-      targetPort: 5000
-      exposure: public
+    # - name: http-python
+    #   targetPort: 8080
+    #   exposure: public
     - name: debug
-      targetPort: 5679
+      targetPort: 5000
+      exposure: none
     env:
     - name: DEBUG_PORT
       value: "{{DEBUG_PORT}}"
@@ -82,14 +82,18 @@ components:
       value: "{{APP_CONFIG}}"
     - name: ODO_DEBUG
       value: "true"
-    - name: MYSQL_DATABASE
-      value: testdb
-    - name: MYSQL_USER
-      value: user
-    - name: MYSQL_PASSWORD
-      value: pass
-    - name: MYSQL_HOST
-      value: mysql
+    - name: FLASK_PORT
+      value: "{{DEBUG_PORT}}"
+    - name: FLASK_HOST
+      value: "0.0.0.0"
+    # - name: MYSQL_DATABASE
+    #   value: testdb
+    # - name: MYSQL_USER
+    #   value: user
+    # - name: MYSQL_PASSWORD
+    #   value: pass
+    # - name: MYSQL_HOST
+    #   value: mysql
     image: "{{PYTHON_IMAGE}}"
     mountSources: true  
 - name: route-url

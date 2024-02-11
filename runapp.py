@@ -40,13 +40,25 @@ if __name__ == '__main__':
             start_debug=False
             
         if start_debug:
-            logger.info("Running Flask App with Remote Debugging")           
-            app.run(host=flask_host, port=flask_port,debug=True, use_debugger=False, use_reloader=False)
+            logger.info("Running Flask App with Remote Debugging")
+            try:
+                app.run(host=flask_host, port=flask_port,debug=True, use_debugger=False, use_reloader=False)
+            except OSError as error:
+                if "Address already in use" in str(error):
+                    logger.error("Port {} is already in use".format(flask_port))
+                else:
+                    logger.error("Error in Running Flask App: {}".format(error))
     elif os.environ.get('ODO_DEBUG') == "true":
         logger.info("ODO Debugging Enabled")
         flask_port=os.environ.get('FLASK_PORT')
-        flask_host=os.environ.get('FLASK_HOST')        
-        app.run(host=flask_host, port=flask_port,debug=True, use_reloader=True)
+        flask_host=os.environ.get('FLASK_HOST')
+        try:
+            app.run(host=flask_host, port=flask_port,debug=True, use_debugger=False, use_reloader=False)
+        except OSError as error:
+            if "Address already in use" in str(error):
+                logger.error("Port {} is already in use".format(flask_port))
+            else:
+                logger.error("Error in Running Flask App: {}".format(error))
     else:
         logger.info("Debugging Disabled")
         app.run()
