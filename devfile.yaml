@@ -8,16 +8,15 @@ commands:
     hotReloadCapable: false
     workingDir: ${PROJECTS_ROOT}
   id: install-python-requirements-file
-# Run Application 
-# - exec:
-#     commandLine: /bin/bash -c "./runapp.sh"
-#     component: python-39
-#     group:
-#       isDefault: true
-#       kind: run
-#     hotReloadCapable: true
-#     workingDir: ${PROJECTS_ROOT}
-#   id: run-application-via-entry-script
+- exec:
+    commandLine: ./runapp.sh
+    component: python-39
+    group:
+      isDefault: true
+      kind: run
+    hotReloadCapable: true
+    workingDir: ${PROJECTS_ROOT}
+  id: run
 - exec:
     commandLine: python3 ./runapp.py
     component: python-39
@@ -34,11 +33,13 @@ components:
     - -f
     - /dev/null
     endpoints:
-    - exposure: none
+    - exposure: internal
       name: debug
+      secure: false
       targetPort: 5679
     - exposure: public
       name: http-python
+      secure: false
       targetPort: 5000
     env:
     - name: DEBUG_PORT
@@ -78,6 +79,6 @@ variables:
   APP_MODULE: runapp:app
   APPLICATION_PORT: "5000"
   DEBUG_PORT: "5679"
-  PYTHON_IMAGE: registry.access.redhat.com/ubi9/python-39:latest
   ODO_DEBUG: "true"
+  PYTHON_IMAGE: registry.access.redhat.com/ubi9/python-39:latest
   RESOURCE_NAME: testflask
